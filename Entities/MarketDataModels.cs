@@ -15,6 +15,7 @@
 
     public class MarketDataResponse
     {
+        
         public string Pair { get; set; } = string.Empty;
         public string Timeframe { get; set; } = string.Empty;
         public List<OhlcvBar> OhlcvBar { get; set; } = new();

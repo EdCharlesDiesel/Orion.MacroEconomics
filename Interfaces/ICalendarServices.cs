@@ -1,3 +1,5 @@
+using Orion.MacroEconomics.Entities;
+
 namespace Orion.MacroEconomics.Interfaces;
 
 public interface ICalendarServices
@@ -10,3 +12,4 @@ public interface ICalendarServices
     Task<string> GetCalendarEvents();
     void GetCalendarEventsByIndicator(string[] indicators);
 }
+

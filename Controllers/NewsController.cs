@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Orion.MacroEconomics.Services;
 
 namespace Orion.MacroEconomics.Controllers;
 [ApiController]
@@ -26,3 +27,4 @@ public class NewsController(TradingEconomicsService service) : ControllerBase
         return Ok(result);
     }
 }
+

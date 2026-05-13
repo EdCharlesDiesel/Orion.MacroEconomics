@@ -2,7 +2,6 @@ using System.Reflection;
 using System.Threading.RateLimiting;
 using JasperFx;
 using Marten;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Orion.MacroEconomics.Configuration;
@@ -29,14 +28,9 @@ builder.Services.AddMemoryCache();
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
-builder.Services.AddDbContext<TradingDbContext>(options =>
-{
-    options.UseNpgsql(builder.Configuration.GetConnectionString("MacroDbConnection"));
-});
-
 builder.Services.AddMarten(options =>
 {
-    options.Connection(builder.Configuration.GetConnectionString("MacroDbConnection"));
+    options.Connection(builder.Configuration.GetConnectionString("MacroDbConnection") ?? "");
     options.AutoCreateSchemaObjects = AutoCreate.CreateOrUpdate;
 
     options.Schema.For<TradePlan>()
@@ -60,7 +54,7 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Orion TradingEconomics API",
+        Title = "Orion Macro Economics API",
         Version = "v1",
         Description = "An API for economic events and forex analysis.",
         Contact = new OpenApiContact
@@ -123,21 +117,16 @@ builder.Services.AddHttpClient("TradingEconomics", client =>
 
 builder.Services.AddHttpClient();
 
-
-// ==========================
-// Data Providers
-// ==========================
-
 builder.Services.AddScoped<IFredService, FredService>();
 
-builder.Services.AddScoped<IYahooMarketProvider, YahooMarketProvider>();
+// builder.Services.AddScoped<IYahooMarketProvider, YahooMarketProvider>();
 builder.Services.AddScoped<IDukascopyTickProvider, DukascopyTickProvider>();
 builder.Services.AddScoped<ITrueFxTickProvider, TrueFxTickProvider>();
 builder.Services.AddScoped<IFredMacroProvider, FredMacroProvider>();
 builder.Services.AddScoped<ITradingEconomicsProvider, TradingEconomicsProvider>();
 
 // builder.Services.AddScoped<IMarketDataFeedProvider>(sp =>
-//     sp.GetRequiredService<IYahooMarketProvider>());
+    // sp.GetRequiredService<IYahooMarketProvider>());
 
 builder.Services.AddScoped<IMarketDataFeedProvider>(sp =>
     sp.GetRequiredService<IDukascopyTickProvider>());
@@ -151,22 +140,12 @@ builder.Services.AddScoped<IMarketDataFeedProvider>(sp =>
 builder.Services.AddScoped<IMarketDataFeedProvider>(sp =>
     sp.GetRequiredService<ITradingEconomicsProvider>());
 
-
-// ==========================
-// Core Services
-// ==========================
-
 builder.Services.AddScoped<IMarketDataStore, MarketDataStore>();
 builder.Services.AddScoped<IMarketDataEngine, MarketDataEngine>();
 
 builder.Services.AddScoped<IOrderBookProvider, OrderBookProvider>();
 builder.Services.AddScoped<IAuditStorage, AuditStorage>();
 builder.Services.AddScoped<ICacheService, MemoryCacheService>();
-
-
-// ==========================
-// Required Concrete Dependencies
-// ==========================
 
 builder.Services.AddScoped<ConfigurationEngine>();
 builder.Services.AddScoped<ScenarioEngine>();
@@ -228,11 +207,6 @@ builder.Services.AddHttpClient<IAlphaVantageMarketDataProvider, AlphaVantageMark
 builder.Services.AddScoped<IMarketDataDocumentStore, MarketDataDocumentStore>();
 builder.Services.AddScoped<IAlphaVantageSignalEngine, AlphaVantageSignalEngine>();
 builder.Services.AddScoped<IGmailSignalNotificationService, GmailSignalNotificationService>();
-//
-// ==========================
-// Infrastructure Dependencies
-// ==========================
-//
 builder.Services.AddScoped(typeof(IRepository<>), typeof(InMemoryRepository<>));
 builder.Services.AddScoped<IExecutionCostModel, SimpleExecutionCostModel>();
 builder.Services.AddScoped<ILatencyModel, SimpleLatencyModel>();
@@ -244,12 +218,6 @@ builder.Services.AddScoped<IMacroTransitionModel, MacroTransitionModel>();
 builder.Services.AddScoped<IMarketDataService, MarketDataService>();
 builder.Services.AddScoped<IOrderBookExecutionService, OrderBookExecutionService>();
 builder.Services.AddScoped<IIngestionValidator, IngestionValidator>();
-//
-//
-// ==========================
-// Engines
-// ==========================
-//
 builder.Services.AddScoped<AdvancedExecutionEngine>();
 builder.Services.AddScoped<IAdvancedExecutionEngine, AdvancedExecutionEngine>();
 builder.Services.AddScoped<IAlertEngine, AlertEngine>();
@@ -299,9 +267,6 @@ builder.Services.AddCors(options =>
 });
 
 
-// ==========================
-// Rate Limiting
-// ==========================
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -341,3 +306,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+

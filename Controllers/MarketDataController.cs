@@ -1,244 +1,127 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Orion.MacroEconomics.DTO;
+using Orion.MacroEconomics.Engine.Interfaces;
 using Orion.MacroEconomics.Entities;
-using Orion.MacroEconomics.Providers.Interfaces;
 
 namespace Orion.MacroEconomics.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    public class MarketDataController : ControllerBase
+    [Route("api/market-data")]
+    [Produces("application/json")]
+    public class MarketDataController(IMarketDataEngine marketDataEngine) : ControllerBase
     {
-        private readonly IEnumerable<IMarketDataFeedProvider> _providers;
-        private readonly ILogger<MarketDataController> _logger;
-
-        public MarketDataController(
-            IEnumerable<IMarketDataFeedProvider> providers,
-            ILogger<MarketDataController> logger)
-        {
-            _providers = providers;
-            _logger = logger;
-        }
-
-        private IMarketDataFeedProvider GetProvider(string providerName)
-        {
-            var provider = _providers.FirstOrDefault(p =>
-                p.Name.Equals(providerName, StringComparison.OrdinalIgnoreCase));
-            
-            if (provider == null)
-                throw new ArgumentException($"Provider '{providerName}' not found. Available: {string.Join(", ", _providers.Select(p => p.Name))}");
-            
-            return provider;
-        }
-
         /// <summary>
-        /// List available data feed providers
+        /// Fetches and stores market data for a given provider, symbol, and date range.
         /// </summary>
-        [HttpGet("providers")]
-        public ActionResult<IEnumerable<string>> GetProviders()
-        {
-            return Ok(_providers.Select(p => p.Name));
-        }
-
-        /// <summary>
-        /// Get raw data for a symbol from a specific provider
-        /// </summary>
-        [HttpGet("{providerName}/data")]
-        public async Task<ActionResult<object>> GetAsync(
-            string providerName,
-            [FromQuery] string symbol,
-            [FromQuery] DateTime fromUtc,
-            [FromQuery] DateTime toUtc,
+        [HttpPost("fetch")]
+        [ProducesResponseType(typeof(MarketDataSnapshot), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> FetchAndStore(
+            [FromBody] FetchMarketDataRequest request,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var provider = GetProvider(providerName);
-                var result = await provider.GetAsync(symbol, fromUtc, toUtc, cancellationToken);
-                return Ok(result);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting data from {Provider} for {Symbol}", providerName, symbol);
-                return StatusCode(500, ex.Message);
-            }
+            var result = await marketDataEngine.FetchAndStoreAsync(
+                request.Provider,
+                request.Symbol,
+                request.FromUtc,
+                request.ToUtc,
+                cancellationToken);
+
+            return Ok(result);
         }
 
         /// <summary>
-        /// Get macroeconomic data from a provider
+        /// Returns the current cached macro data.
         /// </summary>
-        [HttpGet("{providerName}/macro")]
-        public async Task<ActionResult<MacroData>> GetMacroDataAsync(
-            string providerName,
+        [HttpGet("macro")]
+        [ProducesResponseType(typeof(MacroData), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetMacroData(CancellationToken cancellationToken)
+        {
+            var result = await marketDataEngine.GetMacroDataAsync(cancellationToken);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Forces a refresh of macro data from the upstream source.
+        /// </summary>
+        [HttpPost("macro/refresh")]
+        [ProducesResponseType(typeof(MacroData), StatusCodes.Status200OK)]
+        public async Task<IActionResult> RefreshMacroData(CancellationToken cancellationToken)
+        {
+            var result = await marketDataEngine.RefreshMacroDataAsync(cancellationToken);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Returns FRED series mappings used for macro data retrieval.
+        /// </summary>
+        [HttpGet("fred-series")]
+        [ProducesResponseType(typeof(Dictionary<string, Dictionary<string, string>>), StatusCodes.Status200OK)]
+        public IActionResult GetFredSeriesMappings()
+        {
+            var result = marketDataEngine.GetFredSeriesMappings();
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Checks the status of the FRED data source.
+        /// </summary>
+        [HttpGet("fred-status")]
+        [ProducesResponseType(typeof(FredStatusResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> CheckFredStatus(CancellationToken cancellationToken)
+        {
+            var result = await marketDataEngine.CheckStatusAsync(cancellationToken);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Returns historical OHLCV candles for the given market data request.
+        /// </summary>
+        [HttpPost("historical")]
+        [ProducesResponseType(typeof(IReadOnlyList<OhlcvBar>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetHistoricalCandles(
+            [FromBody] MarketDataRequest request,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var provider = GetProvider(providerName);
-                var result = await provider.GetMacroDataAsync(cancellationToken);
-                return Ok(result);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting macro data from {Provider}", providerName);
-                return StatusCode(500, ex.Message);
-            }
+            var result = await marketDataEngine.GetHistoricalCandlesAsync(request, cancellationToken);
+            return Ok(result);
         }
 
         /// <summary>
-        /// Get FRED series mappings (if applicable)
+        /// Returns the latest market quote for a currency pair.
         /// </summary>
-        [HttpGet("{providerName}/seriesmappings")]
-        public ActionResult<Dictionary<string, Dictionary<string, string>>> GetFredSeriesMappings(string providerName)
+        [HttpGet("quote/{pair}")]
+        [ProducesResponseType(typeof(MarketQuote), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetLatestQuote(string pair, CancellationToken cancellationToken)
         {
-            try
-            {
-                var provider = GetProvider(providerName);
-                return Ok(provider.GetFredSeriesMappings());
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var result = await marketDataEngine.GetLatestQuoteAsync(pair, cancellationToken);
+            return result is null ? NotFound($"No quote found for pair '{pair}'.") : Ok(result);
         }
 
         /// <summary>
-        /// Check provider status
+        /// Checks market data health for a currency pair.
         /// </summary>
-        [HttpGet("{providerName}/status")]
-        public async Task<ActionResult<FredStatusResponse>> CheckStatusAsync(
-            string providerName,
-            CancellationToken cancellationToken)
+        [HttpGet("health/{pair}")]
+        [ProducesResponseType(typeof(MarketDataHealth), StatusCodes.Status200OK)]
+        public async Task<IActionResult> CheckHealth(string pair, CancellationToken cancellationToken)
         {
-            try
-            {
-                var provider = GetProvider(providerName);
-                var status = await provider.CheckStatusAsync(cancellationToken);
-                return Ok(status);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error checking status for {Provider}", providerName);
-                return StatusCode(500, ex.Message);
-            }
+            var result = await marketDataEngine.CheckHealthAsync(pair, cancellationToken);
+            return Ok(result);
         }
 
         /// <summary>
-        /// Get historical OHLCV candles
+        /// Returns the latest market tick for a currency pair.
         /// </summary>
-        [HttpGet("{providerName}/candles")]
-        public async Task<ActionResult<IReadOnlyList<OhlcvBar>>> GetHistoricalCandlesAsync(
-            string providerName,
-            [FromQuery] MarketDataRequest request,
-            CancellationToken cancellationToken)
+        [HttpGet("tick/{pair}")]
+        [ProducesResponseType(typeof(MarketTick), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetLatestTick(string pair, CancellationToken cancellationToken)
         {
-            try
-            {
-                var provider = GetProvider(providerName);
-                var candles = await provider.GetHistoricalCandlesAsync(request, cancellationToken);
-                return Ok(candles);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting candles from {Provider} for {Pair}", providerName, request?.Pair);
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Get latest quote for a pair
-        /// </summary>
-        [HttpGet("{providerName}/quote/latest")]
-        public async Task<ActionResult<MarketQuote>> GetLatestQuoteAsync(
-            string providerName,
-            [FromQuery] string pair,
-            CancellationToken cancellationToken)
-        {
-            try
-            {
-                var provider = GetProvider(providerName);
-                var quote = await provider.GetLatestQuoteAsync(pair, cancellationToken);
-                if (quote == null) return NotFound($"No quote available for {pair}");
-                return Ok(quote);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting latest quote from {Provider} for {Pair}", providerName, pair);
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Get latest tick for a pair
-        /// </summary>
-        [HttpGet("{providerName}/tick/latest")]
-        public async Task<ActionResult<MarketTick>> GetLatestTickAsync(
-            string providerName,
-            [FromQuery] string pair,
-            CancellationToken cancellationToken)
-        {
-            try
-            {
-                var provider = GetProvider(providerName);
-                var tick = await provider.GetLatestTickAsync(pair, cancellationToken);
-                if (tick == null) return NotFound($"No tick available for {pair}");
-                return Ok(tick);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting latest tick from {Provider} for {Pair}", providerName, pair);
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Check data health for a pair
-        /// </summary>
-        [HttpGet("{providerName}/health")]
-        public async Task<ActionResult<MarketDataHealth>> CheckHealthAsync(
-            string providerName,
-            [FromQuery] string pair,
-            CancellationToken cancellationToken)
-        {
-            try
-            {
-                var provider = GetProvider(providerName);
-                var health = await provider.CheckHealthAsync(pair, cancellationToken);
-                return Ok(health);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error checking health for {Provider} / {Pair}", providerName, pair);
-                return StatusCode(500, ex.Message);
-            }
+            var result = await marketDataEngine.GetLatestTickAsync(pair, cancellationToken);
+            return Ok(result);
         }
     }
+
+    public record FetchMarketDataRequest(string Provider, string Symbol, DateTime FromUtc, DateTime ToUtc);
 }

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Orion.MacroEconomics.DTO;
-using Orion.MacroEconomics.Free;
 using Orion.MacroEconomics.Interfaces;
 
 namespace Orion.MacroEconomics.Controllers

@@ -1,9 +1,7 @@
+using Marten;
 using Orion.MacroEconomics.Entities;
-
+using Orion.MacroEconomics.Interfaces;
 namespace Orion.MacroEconomics.Data;
-
-
-
 public sealed class MarketDataDocumentStore(IDocumentSession session) : IMarketDataDocumentStore
 {
     public async Task StoreMarketDataAsync(

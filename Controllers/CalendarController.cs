@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Orion.MacroEconomics.Entities;
 using Orion.MacroEconomics.Interfaces;
 
 namespace Orion.MacroEconomics.Controllers

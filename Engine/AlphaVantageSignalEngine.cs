@@ -1,13 +1,11 @@
 using Orion.MacroEconomics.Engine.Interfaces;
 using Orion.MacroEconomics.Entities;
+using Orion.MacroEconomics.Interfaces;
 using Orion.MacroEconomics.Providers.Interfaces;
 
 namespace Orion.MacroEconomics.Engine;
 
-public sealed class AlphaVantageSignalEngine(
-    IAlphaVantageMarketDataProvider provider,
-    IMarketDataDocumentStore store,
-    ILogger<AlphaVantageSignalEngine> logger) : IAlphaVantageSignalEngine
+public sealed class AlphaVantageSignalEngine(    IAlphaVantageMarketDataProvider provider,    IMarketDataDocumentStore store,    ILogger<AlphaVantageSignalEngine> logger) : IAlphaVantageSignalEngine
 {
     public async Task<TradingSignalDocument> GenerateSignalAsync(
         string pair,

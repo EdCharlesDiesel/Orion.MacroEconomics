@@ -1,4 +1,5 @@
-﻿using Orion.MacroEconomics.Entities;
+﻿using Marten;
+using Orion.MacroEconomics.Entities;
 using Orion.MacroEconomics.Repository.Interfaces;
 
 namespace Orion.MacroEconomics.Repository
