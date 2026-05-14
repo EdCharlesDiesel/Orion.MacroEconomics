@@ -69,3 +69,17 @@ public class ForecastController(IForecastServices service) : ControllerBase
     }
 
 }
+
+public class Forecast
+{
+}
+
+public interface IForecastServices
+{
+    Task<object?> GetForecastsByDate(DateTime startDate, DateTime endDate);
+    Task<object?> GetForecastsByCountries(string[] names);
+    Task<object?> GetForecastsByCountriesAndDates(DateTime startDate, DateTime endDate, string[] names);
+    Task<object?> GetForecastsByIndicator(string[] names);
+    Task<Stream> GetForecasts();
+    Task Create(List<Forecast> forecasts);
+}

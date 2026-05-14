@@ -14,10 +14,7 @@ public class ComtradeController : ControllerBase
         _service = service;
     }
 
-    public ComtradeController(IComtradeServices serviceMockObject)
-    {
-        throw new NotImplementedException();
-    }
+
 
     /// <summary>Get all comtrade categories</summary>
     [HttpGet("categories")]

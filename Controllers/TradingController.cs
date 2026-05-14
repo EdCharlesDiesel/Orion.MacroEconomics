@@ -41,4 +41,7 @@ public sealed class TradingController(
 public sealed record LiveTradingRequest(
     ForexMarketInput Input,
     AccountContext Account,
-    OrderBook OrderBook);
+    OrderBook OrderBook)
+{
+    public ForexMarketInput MarketInput { get; set; }
+}

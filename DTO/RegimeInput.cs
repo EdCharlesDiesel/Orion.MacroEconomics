@@ -12,6 +12,8 @@ public class RegimeInput
     public decimal GrowthSurprise { get; set; }
     public decimal PolicyRateSurprise { get; set; }
     public DateTime TimestampUtc { get; set; } = DateTime.UtcNow;
+    public object Indicators { get; set; }
+    public MarketRegime CurrentRegime { get; set; }
 }
 
 public sealed class RegimeResult

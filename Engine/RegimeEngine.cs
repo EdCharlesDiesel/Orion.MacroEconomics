@@ -1,6 +1,8 @@
-﻿using Orion.MacroEconomics.Engine.Interfaces;
+﻿using Orion.MacroEconomics.DTO;
+using Orion.MacroEconomics.Engine.Interfaces;
 using Orion.MacroEconomics.Entities;
 using Orion.MacroEconomics.Enum;
+using RegimeResult = Orion.MacroEconomics.Entities.RegimeResult;
 
 namespace Orion.MacroEconomics.Engine
 {
@@ -114,6 +116,44 @@ namespace Orion.MacroEconomics.Engine
                 Confidence = confidence,
                 Reason = reason,
                 TimestampUtc = DateTime.UtcNow
+            };
+        }
+
+        public object? Analyze(RegimeInput input)
+        {
+            ArgumentNullException.ThrowIfNull(input);
+
+            if (input.Indicators is not { Count: > 0 })
+                return new RegimeResult
+                {
+                    Regime       = Next(input.CurrentRegime),
+                    Confidence   = 50m,
+                    Reason       = "No indicators supplied — regime simulated from current state.",
+                    TimestampUtc = DateTime.UtcNow,
+                };
+
+            // Detect regime per indicator, then aggregate by confidence-weighted vote
+            var detections = input.Indicators.Select(Detect).ToList();
+
+            var scores = detections
+                .GroupBy(r => r.Regime)
+                .ToDictionary(g => g.Key, g => g.Sum(r => r.Confidence));
+
+            var (winningRegime, winningScore) = scores.MaxBy(kvp => kvp.Value);
+            var totalScore      = scores.Values.Sum();
+            var normalised      = totalScore > 0 ? Math.Round(winningScore / totalScore * 100m, 1) : 50m;
+
+            var reasons = detections
+                .Where(r => r.Regime == winningRegime)
+                .Select(r => r.Reason)
+                .Distinct();
+
+            return new RegimeResult
+            {
+                Regime       = winningRegime,
+                Confidence   = normalised,
+                Reason       = string.Join(" ", reasons),
+                TimestampUtc = DateTime.UtcNow,
             };
         }
 

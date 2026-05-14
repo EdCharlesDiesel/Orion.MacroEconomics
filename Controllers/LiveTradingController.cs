@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Orion.MacroEconomics.Engine.Interfaces;
 using Orion.MacroEconomics.Entities;
 
 namespace Orion.MacroEconomics.Controllers
@@ -7,9 +8,9 @@ namespace Orion.MacroEconomics.Controllers
     [Route("api/live-trading")]
     public sealed class LiveTradingController : ControllerBase
     {
-        private readonly LiveTradingOrchestrator _orchestrator;
+        private readonly ILiveTradingOrchestrator _orchestrator;
 
-        public LiveTradingController(LiveTradingOrchestrator orchestrator)
+        public LiveTradingController(ILiveTradingOrchestrator orchestrator)
         {
             _orchestrator = orchestrator;
         }

@@ -192,4 +192,24 @@ public sealed class TradingEconomicsService : ITradingEconomicsService
     {
         throw new NotImplementedException();
     }
+
+    public async Task<object?> GetCategories()
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<object?> GetCountries()
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<object?> GetByCountryAndPage(string country, int pageNumber)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<object?> GetHistorical(string symbol)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Orion.MacroEconomics.DTO;
+using Orion.MacroEconomics.Engine.Interfaces;
 using Orion.MacroEconomics.Interfaces;
 
 namespace Orion.MacroEconomics.Controllers
@@ -7,7 +8,7 @@ namespace Orion.MacroEconomics.Controllers
     [ApiController]
     [Route("api/regime")]
     public sealed class RegimeController(
-        RegimeEngineFree regimeEngine,
+        IRegimeEngine regimeEngine,
         IRegimeDataProvider regimeDataProvider,
         ILogger<RegimeController> logger) : ControllerBase
     {

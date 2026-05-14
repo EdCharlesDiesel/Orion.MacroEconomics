@@ -1,5 +1,7 @@
+using Orion.MacroEconomics.DTO;
 using Orion.MacroEconomics.Entities;
 using Orion.MacroEconomics.Enum;
+using RegimeResult = Orion.MacroEconomics.Entities.RegimeResult;
 
 namespace Orion.MacroEconomics.Engine.Interfaces
 {
@@ -17,5 +19,7 @@ namespace Orion.MacroEconomics.Engine.Interfaces
         /// Detects the current regime from a normalized indicator.
         /// </summary>
         RegimeResult Detect(NormalizedIndicator normalized);
+
+        object? Analyze(RegimeInput input);
     }
 }
