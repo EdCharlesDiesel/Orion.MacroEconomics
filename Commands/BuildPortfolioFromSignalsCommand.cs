@@ -5,12 +5,9 @@ namespace Orion.MacroEconomics.Commands
 {
     public record BuildPortfolioFromSignalsCommand(List<FxSignal> Signals, decimal Capital = 100000m) : IRequest<List<PortfolioPosition>>;
 
-    public class BuildPortfolioFromSignalsHandler
-        : IRequestHandler<BuildPortfolioFromSignalsCommand, List<PortfolioPosition>>
+    public class BuildPortfolioFromSignalsHandler : IRequestHandler<BuildPortfolioFromSignalsCommand, List<PortfolioPosition>>
     {
-        public Task<List<PortfolioPosition>> Handle(
-            BuildPortfolioFromSignalsCommand request,
-            CancellationToken cancellationToken)
+        public Task<List<PortfolioPosition>> Handle(BuildPortfolioFromSignalsCommand request, CancellationToken cancellationToken)
         {
             var selected = EnforceExposureLimits(
                 request.Signals
@@ -48,9 +45,7 @@ namespace Orion.MacroEconomics.Commands
             return Task.FromResult(portfolio);
         }
 
-        private static List<FxSignal> EnforceExposureLimits(
-            List<FxSignal> signals,
-            int maxPerCurrency)
+        private static List<FxSignal> EnforceExposureLimits(List<FxSignal> signals, int maxPerCurrency)
         {
             var result = new List<FxSignal>();
             var exposure = new Dictionary<string, int>();
@@ -76,7 +71,12 @@ namespace Orion.MacroEconomics.Commands
         {
             return !exposure.TryGetValue(currency, out var count) || count < max;
         }
-
+        /// <summary>
+        /// Increments the exposure count for the currency.
+        /// </summary>
+        /// <param name="currency"></param>
+        /// <param name="exposure"></param>
+        /// <returns></returns>
         private static void Increment(string currency, Dictionary<string, int> exposure)
         {
             exposure[currency] = exposure.TryGetValue(currency, out var count) ? count + 1 : 1;
