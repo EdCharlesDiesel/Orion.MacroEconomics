@@ -13,7 +13,7 @@ namespace Orion.MacroEconomics.Interfaces
         /// <summary>
         /// Get entry signal based on 15-minute data and trend bias
         /// </summary>
-        EntrySignalResult GetEntrySignal(List<OhlcvBar> data15M, string bias);
+        EntrySignalResult GetEntrySignal(string pair,List<OhlcvBar> data15M, string bias);
 
         /// <summary>
         /// Generate trading ideas across all pairs using multi-timeframe analysis
@@ -79,7 +79,6 @@ namespace Orion.MacroEconomics.Interfaces
         /// Check if there's a valid entry setup
         /// </summary>
         bool HasValidEntrySetup(List<OhlcvBar> data15M,string bias,out List<string> reasons);     
-
         
     }
 }

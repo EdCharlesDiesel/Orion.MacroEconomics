@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Orion.MacroEconomics.DTO;
 using Orion.MacroEconomics.Engine.Interfaces;
 using Orion.MacroEconomics.Entities;
+using Orion.MacroEconomics.Models;
+
 namespace Orion.MacroEconomics.Controllers
 {
     [ApiController]

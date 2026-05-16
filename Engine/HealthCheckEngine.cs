@@ -335,7 +335,7 @@ namespace Orion.MacroEconomics.Engine
             var engine = component.Name switch
             {
                 "NormalizationEngine" => _serviceProvider.GetService(typeof(NormalizationEngine)),
-                "RegimeEngine" => _serviceProvider.GetService(typeof(RegimeEngine)),
+                // "RegimeEngine" => _serviceProvider.GetService(typeof(RegimeEngine)),\
                 "SignalEngine" => _serviceProvider.GetService(typeof(SignalEngine)),
                 "RiskEngine" => _serviceProvider.GetService(typeof(RiskEngine)),
                 "ExecutionEngine" => _serviceProvider.GetService(typeof(ExecutionEngine)),

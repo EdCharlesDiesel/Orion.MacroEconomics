@@ -1,3 +1,4 @@
+using Orion.MacroEconomics.DTO;
 using Orion.MacroEconomics.Entities;
 
 namespace Orion.MacroEconomics.Engine.Interfaces
@@ -10,7 +11,6 @@ namespace Orion.MacroEconomics.Engine.Interfaces
         /// <summary>
         /// Calculates spread, volatility, regime, and drawdown risk.
         /// </summary>
-        RiskResult Evaluate(SignalResult signal, NormalizedMarketContext? market,
-            RegimeResult regime);
+        RiskResult Evaluate(SignalResult signal, NormalizedMarketContext? market, RegimeResult regime);
     }
 }

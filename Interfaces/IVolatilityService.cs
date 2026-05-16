@@ -8,7 +8,6 @@ namespace Orion.MacroEconomics.Interfaces
     public interface IVolatilityService
     {
 
-
         Task<decimal> GetVolatilityAsync(string pair);
         Task<decimal> GetAtrAsync(string pair, int window = 14);
         Task<VolatilityMetrics> GetVolatilityMetricsAsync(string pair);

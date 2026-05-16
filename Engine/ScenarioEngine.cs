@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Orion.MacroEconomics.Application;
 using Orion.MacroEconomics.Commands;
+using Orion.MacroEconomics.DTO;
 using Orion.MacroEconomics.Engine.Interfaces;
 using Orion.MacroEconomics.Entities;
 
@@ -55,10 +56,10 @@ namespace Orion.MacroEconomics.Engine
             };
         }
 
+        
+
         /// <inheritdoc />
-        public ScenarioResult Build(
-            NormalizedIndicator normalized,
-            RegimeResult regime)
+        public ScenarioResult Build(NormalizedIndicator normalized, RegimeResult regime)
         {
             ArgumentNullException.ThrowIfNull(normalized);
             ArgumentNullException.ThrowIfNull(regime);

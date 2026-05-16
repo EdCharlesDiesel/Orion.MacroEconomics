@@ -1,7 +1,6 @@
-using Orion.MacroEconomics.DTO;
 using Orion.MacroEconomics.Entities;
 
-namespace Orion.MacroEconomics.Controllers;
+namespace Orion.MacroEconomics.DTO;
 
 public class TradingIdeasResponse
 {

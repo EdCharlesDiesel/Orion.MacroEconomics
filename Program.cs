@@ -50,32 +50,32 @@ builder.Services.AddMarten(options =>
         .Index(x => x.FilledAt);
 });
 
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "Orion Macro Economics API",
-        Version = "v1",
-        Description = "An API for economic events and forex analysis.",
-        Contact = new OpenApiContact
-        {
-            Name = "Khotso Mokhethi",
-            Email = "Mokhetkc@hotmail.com",
-            Url = new Uri("https://github.com/EdCharlesDiesel")
-        },
-        License = new OpenApiLicense
-        {
-            Name = "MIT License",
-            Url = new Uri("https://opensource.org/licenses/MIT")
-        }
-    });
-
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-
-    if (File.Exists(xmlPath))
-        options.IncludeXmlComments(xmlPath);
-});
+// builder.Services.AddSwaggerGen(options =>
+// {
+//     options.SwaggerDoc("v1", new OpenApiInfo
+//     {
+//         Title = "Orion Macro Economics API",
+//         Version = "v1",
+//         Description = "An API for economic events and forex analysis.",
+//         Contact = new OpenApiContact
+//         {
+//             Name = "Khotso Mokhethi",
+//             Email = "Mokhetkc@hotmail.com",
+//             Url = new Uri("https://github.com/EdCharlesDiesel")
+//         },
+//         License = new OpenApiLicense
+//         {
+//             Name = "MIT License",
+//             Url = new Uri("https://opensource.org/licenses/MIT")
+//         }
+//     });
+//
+//     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+//     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+//
+//     if (File.Exists(xmlPath))
+//         options.IncludeXmlComments(xmlPath);
+// });
 
 builder.Services.Configure<AppConfiguration>(
     builder.Configuration.GetSection("AppConfiguration"));
@@ -124,6 +124,8 @@ builder.Services.AddScoped<IDukascopyTickProvider, DukascopyTickProvider>();
 builder.Services.AddScoped<ITrueFxTickProvider, TrueFxTickProvider>();
 builder.Services.AddScoped<IFredMacroProvider, FredMacroProvider>();
 builder.Services.AddScoped<ITradingEconomicsProvider, TradingEconomicsProvider>();
+// builder.Services.AddScoped<EmailAlertService>();
+builder.Services.AddScoped<MassiveDataProvider>();
 
 // builder.Services.AddScoped<IMarketDataFeedProvider>(sp =>
     // sp.GetRequiredService<IYahooMarketProvider>());
@@ -140,10 +142,10 @@ builder.Services.AddScoped<IMarketDataFeedProvider>(sp =>
 builder.Services.AddScoped<IMarketDataFeedProvider>(sp =>
     sp.GetRequiredService<ITradingEconomicsProvider>());
 
-builder.Services.AddScoped<IMarketDataStore, MarketDataStore>();
+// builder.Services.AddScoped<IMarketDataStore, MarketDataStore>();
 builder.Services.AddScoped<IMarketDataEngine, MarketDataEngine>();
 
-builder.Services.AddScoped<IOrderBookProvider, OrderBookProvider>();
+// builder.Services.AddScoped<IOrderBookProvider, OrderBookProvider>();
 builder.Services.AddScoped<IAuditStorage, AuditStorage>();
 builder.Services.AddScoped<ICacheService, MemoryCacheService>();
 
@@ -247,7 +249,7 @@ builder.Services.AddScoped<IPositionSizingEngine, PositionSizingEngine>();
 builder.Services.AddScoped<IProbabilisticScenarioEngine, ProbabilisticScenarioEngine>();
 builder.Services.AddScoped<IRealBacktestEngine, RealBacktestEngine>();
 builder.Services.AddScoped<IRealTimeRiskEngine, RealTimeRiskEngine>();
-builder.Services.AddScoped<IRegimeEngine, RegimeEngine>();
+// builder.Services.AddScoped<IRegimeEngine, RegimeEngine>();
 builder.Services.AddScoped<IRiskEngine, RiskEngine>();
 builder.Services.AddScoped<IScenarioEngine, ScenarioEngine>();
 builder.Services.AddScoped<ISentimentEngine, SentimentEngine>();
@@ -286,8 +288,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // app.UseSwagger();
+    // app.UseSwaggerUI();
 }
 else
 {

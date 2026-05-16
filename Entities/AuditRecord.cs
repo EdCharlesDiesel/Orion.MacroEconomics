@@ -1,6 +1,6 @@
+using Orion.MacroEconomics.DTO;
+using Orion.MacroEconomics.Models;
 namespace Orion.MacroEconomics.Entities;
-
-
 public class AuditRecord
 {
     public string Stage { get; set; } = "";
@@ -13,11 +13,7 @@ public class AuditRecord
     public string SessionId { get; set; }
     public string TraderId { get; set; }
     public DateTime ExecutionTime { get; set; }
-        
-    // Pipeline Input
     public ForexMarketInput Input { get; set; }
-        
-    // Pipeline Results
     public NormalizedMarketContext NormalizedContext { get; set; }
     public RegimeResult Regime { get; set; }
     public ScenarioResult Scenario { get; set; }
@@ -28,11 +24,7 @@ public class AuditRecord
     public decimal PositionSize { get; set; }
     public ExecutionResult Execution { get; set; }
     public ExitStrategy Exit { get; set; }
-        
-    // Final Decision
     public TradingDecision Decision { get; set; }
-        
-    // Metadata
     public TimeSpan TotalProcessingTime { get; set; }
     public Dictionary<string, TimeSpan> StepTimings { get; set; }
     public string Version { get; set; }

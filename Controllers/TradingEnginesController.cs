@@ -4,7 +4,8 @@ using Orion.MacroEconomics.Engine.Interfaces;
 using Orion.MacroEconomics.Engine.Interfaces.Orion.API.TradingEconomics.Engine.Interfaces;
 using Orion.MacroEconomics.Entities;
 using Orion.MacroEconomics.Enum;
-using RegimeResult = Orion.MacroEconomics.Entities.RegimeResult;
+using Orion.MacroEconomics.Models;
+
 
 namespace Orion.MacroEconomics.Controllers;
 

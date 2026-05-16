@@ -1,4 +1,5 @@
 using Orion.MacroEconomics.Entities;
+using Orion.MacroEconomics.Models;
 
 namespace Orion.MacroEconomics.DTO;
 

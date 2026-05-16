@@ -1,6 +1,7 @@
 
 
 using Microsoft.AspNetCore.Mvc;
+using Orion.MacroEconomics.DTO;
 using Orion.MacroEconomics.Engine.Interfaces;
 using Orion.MacroEconomics.Entities;
 

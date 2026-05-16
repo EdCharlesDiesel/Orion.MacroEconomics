@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Orion.MacroEconomics.Entities;
 using Orion.MacroEconomics.Interfaces;
+using Orion.MacroEconomics.Providers.Interfaces;
 
 namespace Orion.MacroEconomics.Controllers
 {    
@@ -10,16 +11,11 @@ namespace Orion.MacroEconomics.Controllers
     public class TechnicalAnalysisController : ControllerBase
     {
         private readonly ITechnicalAnalysisService _taService;
-        private readonly IYahooFinanceService _yahooService;
         private readonly ILogger<TechnicalAnalysisController> _logger;
 
-        public TechnicalAnalysisController(
-            ITechnicalAnalysisService taService,
-            IYahooFinanceService yahooService,
-            ILogger<TechnicalAnalysisController> logger)
+        public TechnicalAnalysisController(ITechnicalAnalysisService taService,IYahooFinanceService yahooService, ILogger<TechnicalAnalysisController> logger)
         {
             _taService = taService;
-            _yahooService = yahooService;
             _logger = logger;
         }
 
@@ -39,14 +35,13 @@ namespace Orion.MacroEconomics.Controllers
         }
 
         [HttpGet("entry-signal")]
-        public async Task<ActionResult<EntrySignalResult>> GetEntrySignal([FromQuery] string pair,[FromQuery] string bias,CancellationToken cancellationToken)
+        public async Task<ActionResult<EntrySignalResult>> GetEntrySignal([FromQuery] string pair,[FromQuery] string bias,List<OhlcvBar> data15m,CancellationToken cancellationToken)
         {
-            throw new NotImplementedException("This endpoint is not implemented yet. In production, it would fetch the latest 15m data for the given pair, calculate the entry signal based on the bias, and return the result.");
             try
             {
-                var data15m = await _yahooService.FetchDataAsync(pair, "15m", "5d", cancellationToken);
-                var signal = _taService.GetEntrySignal(data15m, bias);
-                return Ok(signal);
+                // var _15minData = await _taService.GetEntrySignal(pair, data15m, "5d", cancellationToken);
+                // var signal = _taService.GetEntrySignal(pair,_15minData, bias);
+                return Ok();
             }
             catch (Exception ex)
             {
