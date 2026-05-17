@@ -14,6 +14,8 @@ using Orion.MacroEconomics.Helpers;
 using Orion.MacroEconomics.Interfaces;
 using Orion.MacroEconomics.Providers;
 using Orion.MacroEconomics.Providers.Interfaces;
+using Orion.MacroEconomics.Repository;
+using Orion.MacroEconomics.Repository.Interfaces;
 using Orion.MacroEconomics.Services;
 using YahooQuotesApi;
 
@@ -191,7 +193,7 @@ builder.Services.AddScoped<ExitEngine>();
 builder.Services.AddScoped<FxRelativePricer>();
 builder.Services.AddScoped<FxPriceSimulator>();
 builder.Services.AddScoped<AdvancedExecutionEngine>();
-
+builder.Services.AddScoped<IMarketDataRepository, MarketDataRepository>();
 builder.Services.AddScoped<IAdvancedExecutionEngine, AdvancedExecutionEngine>();
 builder.Services.AddScoped<IAlertEngine, AlertEngine>();
 builder.Services.AddScoped<IAlphaEngine, AlphaEngine>();

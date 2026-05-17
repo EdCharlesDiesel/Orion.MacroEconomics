@@ -26,5 +26,5 @@ public interface IMarketDataEngine
     Task<MacroData?> GetMacroDataAsync(CancellationToken cancellationToken);
     Task<MacroData?> RefreshMacroDataAsync(CancellationToken cancellationToken);
     Task<MarketDataHealth?> CheckHealthAsync(string pair, CancellationToken cancellationToken);
-    Task<object?> FetchAndStoreAsync(string requestProvider, string requestSymbol, DateTime requestFromUtc, DateTime requestToUtc, CancellationToken cancellationToken);
+    Task<MarketDataSnapshot> FetchAndStoreAsync(string requestProvider, string requestSymbol, DateTime requestFromUtc, DateTime requestToUtc, CancellationToken cancellationToken);
 }
