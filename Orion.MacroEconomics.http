@@ -1,0 +1,6 @@
+@Orion.MacroEconomics_HostAddress = http://localhost:5238
+
+GET {{Orion.MacroEconomics_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
