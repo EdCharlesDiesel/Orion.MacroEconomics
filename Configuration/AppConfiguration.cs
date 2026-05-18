@@ -8,7 +8,6 @@ namespace Orion.MacroEconomics.Configuration
         public string Version { get; set; } = "1.0.0";
         public int CacheTTLSeconds { get; set; } = 300;
         public int AutoRefreshIntervalSeconds { get; set; } = 300;
-
         // Risk Management
         public decimal RiskPerTrade { get; set; } = 0.02m;
         public decimal ATRSLMult { get; set; } = 2.0m;
@@ -73,6 +72,7 @@ namespace Orion.MacroEconomics.Configuration
         public object ApiBaseUrl { get; internal set; }
         
         public LiveTradingConfig LiveTrading { get; set; }
+        public object TradingSystem { get; set; }
 
         // Helper Methods
         public decimal GetATRMultiplier(string pair)

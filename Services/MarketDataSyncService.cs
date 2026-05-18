@@ -34,7 +34,10 @@ public sealed class MarketDataSyncService(IMassiveDataProvider provider, IMarket
                 {
                     var candles = await provider.GetCandlesAsync(pair, timeframe, ct);
                     if (candles.Count > 0)
-                        await repository.UpsertCandlesAsync(pair, timeframe, candles, ct);
+                    {
+                             await repository.UpsertCandlesAsync(pair, timeframe, candles, ct);
+                    }
+
                 }
                 catch (Exception ex)
                 {

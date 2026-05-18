@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Orion.MacroEconomics.Application;
 using Orion.MacroEconomics.Commands;
 using Orion.MacroEconomics.DTO;
 using Orion.MacroEconomics.Engine.Interfaces;

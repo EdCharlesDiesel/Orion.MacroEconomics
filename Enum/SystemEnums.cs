@@ -46,6 +46,14 @@ public enum MarketRegime
     Goldilocks
 }
 
+
+public enum TradeDirection
+{
+    None  = 0,
+    Long  = 1,
+    Short = 2
+}
+
 public enum MarketRegimeFree
 {
     Neutral = 0,
@@ -55,6 +63,15 @@ public enum MarketRegimeFree
     GrowthShock = 4,
     PolicyShock = 5
 }
+public enum TradePlanStatus
+{
+    Pending   = 0,
+    Active    = 1,
+    Closed    = 2,
+    Cancelled = 3,
+    StoppedOut = 4
+}
+
 
 public enum IndicatorFrequency
 {
