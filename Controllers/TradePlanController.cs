@@ -1,10 +1,9 @@
 ﻿using Marten;
 using Microsoft.AspNetCore.Mvc;
 using Orion.MacroEconomics.Entities;
+using Orion.MacroEconomics.Enum;
 using Orion.MacroEconomics.Extensions;
-using static Orion.MacroEconomics.Enum.TradeDirection;
-using TradePlan = Orion.MacroEconomics.Extensions.TradePlan;
-using TradePlanStatus = Orion.MacroEconomics.Extensions.TradePlanStatus;
+
 
 namespace Orion.MacroEconomics.Controllers;
 
@@ -43,7 +42,7 @@ public sealed class TradePlanController(
             // Check no pending plan already exists for this pair
             var existing = await query.Query<TradePlan>()
                 .AnyAsync(p => p.Pair   == pair
-                            && p.Status == TradePlanStatus.Pending, ct);
+                            && p.Status == nameof(TradePlanStatus.Pending), ct);
 
             if (existing)
             {
@@ -61,7 +60,7 @@ public sealed class TradePlanController(
         return Ok(new
         {
             Generated = created.Count,
-            Plans     = created.Select(p => new
+            Plans     = created.Select<TradePlan, object>(p => new
             {
                 p.Id, p.Pair, p.Direction,
                 p.EntryPrice, p.StopLoss, p.TakeProfit1, p.TakeProfit2,
@@ -75,7 +74,7 @@ public sealed class TradePlanController(
     public async Task<IActionResult> GetPendingAsync(CancellationToken ct)
     {
         var plans = await query.Query<TradePlan>()
-            .Where(p => p.Status == TradePlanStatus.Pending)
+            .Where(p => p.Status == nameof(TradePlanStatus.Pending))
             .OrderByDescending(p => p.OpenedAt)
             .ToListAsync(ct);
 
@@ -96,10 +95,13 @@ public sealed class TradePlanController(
     {
         var plan = await session.LoadAsync<TradePlan>(id, ct);
         if (plan is null) return NotFound();
-        plan.Status     = TradePlanStatus.Closed;
+
+        plan.Status     = nameof(TradePlanStatus.Closed);  // Use the enum value directly
         plan.ClosedAt   = DateTime.UtcNow;
         plan.ClosePrice = request.ClosePrice;
-        plan.PnL        = plan.Direction == Long.ToString() ? request.ClosePrice - plan.EntryPrice : plan.EntryPrice - request.ClosePrice;
+        plan.PnL        = plan.Direction == nameof(TradeDirection.Long)
+            ? request.ClosePrice - plan.EntryPrice
+            : plan.EntryPrice - request.ClosePrice;
 
         session.Store(plan);
         await session.SaveChangesAsync(ct);

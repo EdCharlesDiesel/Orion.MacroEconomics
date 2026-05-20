@@ -7,11 +7,10 @@
 /// </summary>
 public sealed class CandleDocument
 {
-    public string      Id          { get; set; } = string.Empty;
-    public string      Pair        { get; set; } = string.Empty;
-    public string      Timeframe   { get; set; } = string.Empty;
-    public List<Extensions.Candle> Candles    { get; set; } = [];
-    public DateTime    LastUpdated { get; set; }
-
+    public string Id { get; set; } = string.Empty;
+    public string Pair { get; set; } = string.Empty;
+    public string Timeframe { get; set; } = string.Empty;
+    public List<Candle> Candles { get; set; } = [];
+    public DateTime LastUpdated { get; set; }
     public static string BuildId(string pair, string timeframe) => $"{pair}:{timeframe}";
 }

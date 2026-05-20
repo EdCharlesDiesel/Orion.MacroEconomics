@@ -1,7 +1,7 @@
 using System.Collections;
 using Orion.MacroEconomics.Entities;
 
-namespace Orion.MacroEconomics.Controllers;
+namespace Orion.MacroEconomics.Interfaces;
 
 public interface IYahooFinanceService
 {

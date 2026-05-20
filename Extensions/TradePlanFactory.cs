@@ -1,9 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Orion.MacroEconomics.Configuration;
+using Orion.MacroEconomics.Entities;
+using Orion.MacroEconomics.Enum;
+using LiveTradingConfig = Orion.MacroEconomics.Configuration.LiveTradingConfig;
 
 namespace Orion.MacroEconomics.Extensions;
 
-public sealed class TradePlanFactory
+public sealed class TradePlanFactory(IOptions<AppConfiguration> config, ILogger<TradePlanFactory> logger)
 {
     private const int AtrPeriod = 14;
     private const int RsiPeriod = 14;
@@ -11,16 +15,8 @@ public sealed class TradePlanFactory
     private const int Ema50Period = 50;
     private const int KeyLevelLookback = 20;
 
-    private readonly AppConfiguration _cfg;
-    private readonly ILogger<TradePlanFactory> _logger;
-
-    public TradePlanFactory(
-        IOptions<AppConfiguration> config,
-        ILogger<TradePlanFactory> logger)
-    {
-        _cfg = config?.Value ?? throw new ArgumentNullException(nameof(config));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+    private readonly AppConfiguration _cfg = config?.Value ?? throw new ArgumentNullException(nameof(config));
+    private readonly ILogger<TradePlanFactory> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     public TradePlan? CreateFromCandles(string pair, List<Candle> candles)
     {
@@ -105,7 +101,7 @@ public sealed class TradePlanFactory
             (decimal)support,
             (decimal)resistance);
 
-        if (direction == TradeDirection.None)
+        if (direction == nameof(TradeDirection.None))
         {
             _logger.LogInformation("{Pair} has no valid directional signal. Skipping.", pair);
             return null;
@@ -131,15 +127,15 @@ public sealed class TradePlanFactory
 
         var entry = close;
 
-        var stopLoss = direction == TradeDirection.Long
+        var stopLoss = direction == nameof(TradeDirection.Long)
             ? entry - stopDistance
             : entry + stopDistance;
 
-        var takeProfit1 = direction == TradeDirection.Long
+        var takeProfit1 = direction == nameof(TradeDirection.Long)
             ? entry + stopDistance * _cfg.TP1ATRMult
             : entry - stopDistance * _cfg.TP1ATRMult;
 
-        var takeProfit2 = direction == TradeDirection.Long
+        var takeProfit2 = direction == nameof(TradeDirection.Long)
             ? entry + stopDistance * _cfg.TP2ATRMult
             : entry - stopDistance * _cfg.TP2ATRMult;
 
@@ -161,7 +157,7 @@ public sealed class TradePlanFactory
             Id = Guid.NewGuid(),
             Pair = pair,
             Direction = direction,
-            Status = TradePlanStatus.Pending,
+            Status = nameof(TradePlanStatus.Pending),
             OpenedAt = DateTime.UtcNow,
 
             EntryPrice = RoundPrice(entry),
@@ -170,13 +166,13 @@ public sealed class TradePlanFactory
             TakeProfit2 = RoundPrice(takeProfit2),
 
             RiskReward = Math.Round(riskReward, 2),
-            ATR = Math.Round((decimal)atr, 5),
+            ATR = Math.Round(atr, 5),
 
             EMA20 = Math.Round(ema20, 5),
             EMA50 = Math.Round(ema50, 5),
-            RSI = Math.Round((decimal)rsi, 2),
-            Support = Math.Round((decimal)support, 5),
-            Resistance = Math.Round((decimal)resistance, 5),
+            RSI = Math.Round(rsi, 2),
+            Support = Math.Round(support, 5),
+            Resistance = Math.Round(resistance, 5),
 
             Timeframe = "Weekly",
             Reasoning = BuildReasoning(
@@ -185,8 +181,8 @@ public sealed class TradePlanFactory
                 close,
                 ema20,
                 ema50,
-                (decimal)rsi,
-                (decimal)atr,
+                rsi,
+                atr,
                 riskReward)
         };
 
@@ -203,12 +199,12 @@ public sealed class TradePlanFactory
         return plan;
     }
 
-    private static double CalculateAtr(List<Candle> candles, int period)
+    private static decimal CalculateAtr(List<Candle> candles, int period)
     {
         if (candles.Count < period + 1)
             return 0;
 
-        var trueRanges = new List<double>();
+        var trueRanges = new List<decimal>();
 
         for (var i = 1; i < candles.Count; i++)
         {
@@ -245,7 +241,7 @@ public sealed class TradePlanFactory
         return ema;
     }
 
-    private static double CalculateRsi(List<Candle> candles, int period)
+    private static decimal CalculateRsi(List<Candle> candles, int period)
     {
         if (candles.Count < period + 1)
             return 50;
@@ -254,8 +250,8 @@ public sealed class TradePlanFactory
             .TakeLast(period + 1)
             .ToList();
 
-        var gains = 0.0;
-        var losses = 0.0;
+        var gains = 0.0m;
+        var losses = 0.0m;
 
         for (var i = 1; i < recent.Count; i++)
         {
@@ -278,9 +274,7 @@ public sealed class TradePlanFactory
         return 100 - 100 / (1 + relativeStrength);
     }
 
-    private static (double Support, double Resistance) FindKeyLevels(
-        List<Candle> candles,
-        int lookback)
+    private static (decimal Support, decimal Resistance) FindKeyLevels(List<Candle> candles, int lookback)
     {
         if (candles.Count == 0)
             return (0, 0);
@@ -295,51 +289,37 @@ public sealed class TradePlanFactory
         return (support, resistance);
     }
 
-    private string DetermineDirection(
-        decimal close,
-        decimal ema20,
-        decimal ema50,
-        double rsi,
-        decimal support,
-        decimal resistance)
+    private string DetermineDirection(decimal close, decimal ema20, decimal ema50, decimal rsi, decimal support, decimal resistance)
     {
         var range = resistance - support;
 
         if (range <= 0)
-            return TradeDirection.None;
+            return nameof(TradeDirection.None);
 
         var bullish = close > ema20
                       && ema20 > ema50
-                      && rsi > (double)_cfg.RSI_OS
-                      && rsi < (double)_cfg.RSI_OB
+                      && rsi > (decimal)_cfg.RSI_OS
+                      && rsi < (decimal)_cfg.RSI_OB
                       && close > support + range * 0.3m;
 
         var bearish = close < ema20
                       && ema20 < ema50
-                      && rsi < (double)_cfg.RSI_OB
-                      && rsi > (double)_cfg.RSI_OS
+                      && rsi < (decimal)_cfg.RSI_OB
+                      && rsi > (decimal)_cfg.RSI_OS
                       && close < resistance - range * 0.3m;
 
         if (bullish)
-            return TradeDirection.Long;
+            return nameof(TradeDirection.Long);
 
         if (bearish)
-            return TradeDirection.Short;
+            return nameof(TradeDirection.Short);
 
-        return TradeDirection.None;
+        return nameof(TradeDirection.None);
     }
 
-    private static string BuildReasoning(
-        string pair,
-        string direction,
-        decimal close,
-        decimal ema20,
-        decimal ema50,
-        decimal rsi,
-        decimal atr,
-        decimal riskReward)
+    private static string BuildReasoning(string pair, string direction, decimal close, decimal ema20, decimal ema50, decimal rsi, decimal atr, decimal riskReward)
     {
-        var trendText = direction == TradeDirection.Long
+        var trendText = direction == nameof(TradeDirection.Long)
             ? $"Close={close:F5} is above EMA20={ema20:F5}, with EMA20 above EMA50={ema50:F5}."
             : $"Close={close:F5} is below EMA20={ema20:F5}, with EMA20 below EMA50={ema50:F5}.";
 
@@ -350,12 +330,17 @@ public sealed class TradePlanFactory
 
     private PairTradingConfig? GetPairConfig(string pair)
     {
-        if (_cfg.TradingSystem?.Pairs is null || _cfg.TradingSystem.Pairs.Count == 0)
+        // Fix: Check if TradingSystem is null or if it has a Pairs dictionary
+        if (_cfg?.TradingSystem is null)
+            return null;
+
+        // Fix: Cast TradingSystem to the correct type or access the Pairs dictionary properly
+        if (_cfg.TradingSystem is not LiveTradingConfig liveConfig || liveConfig.Pairs is null || liveConfig.Pairs.Count == 0)
             return null;
 
         var normalizedPair = NormalizePair(pair);
 
-        return _cfg.TradingSystem.Pairs
+        return liveConfig.Pairs
             .FirstOrDefault(p => NormalizePair(p.Key) == normalizedPair)
             .Value;
     }
@@ -376,85 +361,3 @@ public sealed class TradePlanFactory
     }
 }
 
-public static class TradeDirection
-{
-    public const string None = "None";
-    public const string Long = "Long";
-    public const string Short = "Short";
-}
-
-public static class TradePlanStatus
-{
-    public const string Pending = "Pending";
-    public const string Active = "Active";
-    public const string Closed = "Closed";
-    public const string Cancelled = "Cancelled";
-}
-
-public sealed class Candle
-{
-    public DateTime Time { get; set; }
-    public double Open { get; set; }
-    public double High { get; set; }
-    public double Low { get; set; }
-    public double Close { get; set; }
-    public double Volume { get; set; }
-}
-
-public sealed class TradePlan
-{
-    public Guid Id { get; set; }
-
-    public string Pair { get; set; } = string.Empty;
-    public string Direction { get; set; } = TradeDirection.None;
-    public string Status { get; set; } = TradePlanStatus.Pending;
-
-    public DateTime OpenedAt { get; set; }
-    public DateTime? ClosedAt { get; set; }
-
-    public decimal EntryPrice { get; set; }
-    public decimal StopLoss { get; set; }
-    public decimal TakeProfit1 { get; set; }
-    public decimal TakeProfit2 { get; set; }
-
-    public decimal RiskReward { get; set; }
-    public decimal ATR { get; set; }
-
-    public decimal EMA20 { get; set; }
-    public decimal EMA50 { get; set; }
-    public decimal RSI { get; set; }
-
-    public decimal Support { get; set; }
-    public decimal Resistance { get; set; }
-
-    public string Timeframe { get; set; } = "Weekly";
-    public string Reasoning { get; set; } = string.Empty;
-    public decimal ClosePrice { get; set; }
-    public decimal PnL { get; set; }
-}
-
-public sealed class AppConfiguration
-{
-    public decimal ATRSLMult { get; set; } = 1.5m;
-    public decimal TP1ATRMult { get; set; } = 2.0m;
-    public decimal TP2ATRMult { get; set; } = 3.0m;
-    public decimal MinRR { get; set; } = 1.5m;
-
-    public decimal RSI_OS { get; set; } = 30m;
-    public decimal RSI_OB { get; set; } = 70m;
-
-    public decimal DefaultMinStopDistance { get; set; } = 0.0010m;
-
-    public TradingSystemConfiguration? TradingSystem { get; set; }
-}
-
-public sealed class TradingSystemConfiguration
-{
-    public Dictionary<string, PairTradingConfig> Pairs { get; set; } = new(StringComparer.OrdinalIgnoreCase);
-}
-
-public sealed class PairTradingConfig
-{
-    public decimal AtrStopMultiplier { get; set; } = 1.5m;
-    public decimal MinStopDistance { get; set; } = 0.0010m;
-}

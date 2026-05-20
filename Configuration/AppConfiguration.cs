@@ -8,6 +8,7 @@ namespace Orion.MacroEconomics.Configuration
         public string Version { get; set; } = "1.0.0";
         public int CacheTTLSeconds { get; set; } = 300;
         public int AutoRefreshIntervalSeconds { get; set; } = 300;
+
         // Risk Management
         public decimal RiskPerTrade { get; set; } = 0.02m;
         public decimal ATRSLMult { get; set; } = 2.0m;
@@ -26,7 +27,13 @@ namespace Orion.MacroEconomics.Configuration
         public decimal StochOS { get; set; } = 25.0m;
         public decimal StochOB { get; set; } = 75.0m;
 
-        
+        // Fix: Proper type for TradingSystem
+        public LiveTradingConfig? TradingSystem { get; set; }
+
+        // Remove or fix these redundant properties
+        // public object TradingSystem { get; set; } // Remove this line
+        // public decimal DefaultMinStopDistance { get; set; } // Either keep this or DefaultMinStop, not both
+
         public Dictionary<string, decimal> PairATRMultipliers { get; set; } = new()
         {
             ["EURUSD"] = 1.8m,
@@ -44,7 +51,7 @@ namespace Orion.MacroEconomics.Configuration
             ["BTCUSD"] = 50.0m,
             ["ETHUSD"] = 5.0m
         };
-        
+
         public Dictionary<string, string> Assets { get; set; } = new()
         {
             ["EUR/USD"] = "EURUSD=X",
@@ -59,7 +66,6 @@ namespace Orion.MacroEconomics.Configuration
             ["BTC/USD"] = "BTC-USD"
         };
 
-        
         public Dictionary<string, TimeframeConfig> Timeframes { get; set; } = new()
         {
             ["Weekly"] = new() { Interval = "1wk", Period = "3mo" },
@@ -68,73 +74,31 @@ namespace Orion.MacroEconomics.Configuration
             ["Hourly"] = new() { Interval = "1h", Period = "1mo" },
             ["15 Minute"] = new() { Interval = "15m", Period = "5d" }
         };
-        public bool UseMockData { get; internal set; }
-        public object ApiBaseUrl { get; internal set; }
-        
-        public LiveTradingConfig LiveTrading { get; set; }
-        public object TradingSystem { get; set; }
 
-        // Helper Methods
-        public decimal GetATRMultiplier(string pair)
-        {
-            var normalizedPair = pair.Replace("/", "");
-
-            return PairATRMultipliers?.GetValueOrDefault(normalizedPair, ATRSLMult) ?? ATRSLMult;
-        }
-
-        public decimal GetMinStop(string pair)
-        {
-            var normalizedPair = pair.Replace("/", "");
-            return PairMinStop?.GetValueOrDefault(normalizedPair, DefaultMinStop) ?? DefaultMinStop;
-        }
-
-        public string GetYahooSymbol(string asset)
-        {
-            return Assets?.GetValueOrDefault(asset, asset) ?? asset;
-        }
-
-        public TimeframeConfig GetTimeframeConfig(string timeframe)
-        {
-            return Timeframes?.GetValueOrDefault(timeframe, new TimeframeConfig
-            {
-                Interval = "1d",
-                Period = "1mo"
-            }) ?? new TimeframeConfig { Interval = "1d", Period = "1mo" };
-        }
-
-        
-        public void Validate()
-        {
-            if (RiskPerTrade <= 0 || RiskPerTrade > 0.05m)
-                throw new InvalidOperationException("RiskPerTrade must be between 0 and 5%");
-
-            if (ATRSLMult < 1.0m)
-                throw new InvalidOperationException("ATRSLMult should be at least 1.0");
-
-            if (MinRR < 1.0m)
-                throw new InvalidOperationException("MinRR should be at least 1.0");
-
-            if (StopBufferPercent < 0 || StopBufferPercent > 1)
-                throw new InvalidOperationException("StopBufferPercent must be between 0 and 1");
-        }
+        // These should not have 'internal set' unless you have a specific reason
+        public bool UseMockData { get; set; }
+        public object? ApiBaseUrl { get; set; }
+        public decimal DefaultMinStopDistance { get; set; }
     }
 
-    public class TimeframeConfig
+    // Fix LiveTradingConfig to have proper structure
+    public class LiveTradingConfig
     {
-        public string Interval { get; set; } = string.Empty;
-        public string Period { get; set; } = string.Empty;
-        public TimeSpan GetPeriodTimeSpan()
-        {
-            return Period switch
-            {
-                "1d" => TimeSpan.FromDays(1),
-                "5d" => TimeSpan.FromDays(5),
-                "1mo" => TimeSpan.FromDays(30),
-                "3mo" => TimeSpan.FromDays(90),
-                "6mo" => TimeSpan.FromDays(180),
-                "1y" => TimeSpan.FromDays(365),
-                _ => TimeSpan.FromDays(30)
-            };
-        }
+        public Dictionary<string, PairTradingConfig> Pairs { get; set; } = new();
+        // Add other live trading specific properties
+        public bool EnableLiveTrading { get; set; }
+        public string? ApiKey { get; set; }
+        // etc.
+    }
+
+    public class PairTradingConfig
+    {
+        // This is confusing - you have Pairs dictionary inside PairTradingConfig?
+        // It should probably be something like this:
+        public int AtrStopMultiplier { get; set; }
+        public int MinStopDistance { get; set; }
+        public decimal? CustomMinStop { get; set; }
+        public bool Enabled { get; set; } = true;
+        // Add other pair-specific configuration
     }
 }

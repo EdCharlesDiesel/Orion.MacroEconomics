@@ -2,7 +2,6 @@ using System.Reflection;
 using System.Threading.RateLimiting;
 using JasperFx;
 using Marten;
-
 using Microsoft.OpenApi.Models;
 using Orion.MacroEconomics.Configuration;
 using Orion.MacroEconomics.Data;
@@ -13,73 +12,27 @@ using Orion.MacroEconomics.Entities;
 using Orion.MacroEconomics.Extensions;
 using Orion.MacroEconomics.Helpers;
 using Orion.MacroEconomics.Interfaces;
-
+using Orion.MacroEconomics.Jobs;
+using Orion.MacroEconomics.Models;
 using Orion.MacroEconomics.Providers;
 using Orion.MacroEconomics.Providers.Interfaces;
 using Orion.MacroEconomics.Repository;
 using Orion.MacroEconomics.Repository.Interfaces;
 using Orion.MacroEconomics.Services;
-
-using YahooQuotesApi;
-using AppConfiguration = Orion.MacroEconomics.Configuration.AppConfiguration;
-using TradePlan = Orion.MacroEconomics.Extensions.TradePlan;
+using Weasel.Core;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Get configuration reference early
+var configuration = builder.Configuration;
+
 // ── Core ───────────────────────────────────────────────────────────────────────
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddMemoryCache();
-builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
-
-// ── Marten ────────────────────────────────────────────────────────────────────
-builder.Services.AddMarten(options =>
-{
-    options.Connection(
-        builder.Configuration.GetConnectionString("OrionMacroDbConnection")
-        ?? throw new InvalidOperationException("Missing ConnectionStrings:OrionMacroDbConnection"));
-
-    options.AutoCreateSchemaObjects = builder.Environment.IsDevelopment()
-        ? AutoCreate.CreateOrUpdate
-        : AutoCreate.None;
-
-    options.Schema.For<TradePlan>()
-        .Index(x => x.Status)
-        .Index(x => x.Pair)
-        .Index(x => x.OpenedAt)
-        .Index(x => x.ClosedAt);
-
-    options.Schema.For<OrderRequest>()
-        .Index(x => x.Status)
-        .Index(x => x.Pair)
-        .Index(x => x.CreatedAt);
-
-    options.Schema.For<OrderState>()
-        .Index(x => x.Status)
-        .Index(x => x.Pair)
-        .Index(x => x.FilledAt);
-
-    options.Schema.For<MarketDataDocument>()
-        .Index(x => x.Provider)
-        .Index(x => x.Pair)
-        .Index(x => x.CreatedUtc);
-
-    options.Schema.For<TradingSignalDocument>()
-        .Index(x => x.Pair)
-        .Index(x => x.Direction)
-        .Index(x => x.CreatedUtc);
-
-    options.Schema.For<IngestionRunDocument>()
-        .Index(x => x.TriggeredAt)
-        .Index(x => x.FullySuccessful);
-})
-.UseLightweightSessions()
-.ApplyAllDatabaseChangesOnStartup();
-
-// ── Swagger ────────────────────────────────────────────────────────────────────
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -108,7 +61,7 @@ builder.Services.AddSwaggerGen(options =>
 
 // ── Configuration ──────────────────────────────────────────────────────────────
 builder.Services.Configure<AppConfiguration>(
-    builder.Configuration.GetSection("AppConfiguration"));
+    configuration.GetSection("AppConfiguration"));
 
 builder.Services.Configure<MarketPipelineOptions>(options =>
 {
@@ -119,9 +72,9 @@ builder.Services.Configure<MarketPipelineOptions>(options =>
 });
 
 builder.Services.Configure<GmailOptions>(
-    builder.Configuration.GetSection("Gmail"));
+    configuration.GetSection("Gmail"));
 
-// ── Singletons ─────────────────────────────────────────────────────────────────
+// Normalization options
 builder.Services.AddSingleton(new NormalizationOptions
 {
     MinimumWindowSize = 6,
@@ -129,11 +82,7 @@ builder.Services.AddSingleton(new NormalizationOptions
     WinsorizeZLimit   = 4.0m
 });
 
-builder.Services.AddSingleton<YahooQuotes>(sp =>
-    new YahooQuotesBuilder()
-        .WithLogger(sp.GetRequiredService<ILogger<YahooQuotes>>())
-        .Build());
-
+// Currency strength model
 builder.Services.AddSingleton<CurrencyStrengthModel>(_ =>
     new CurrencyStrengthModel(new List<CurrencyModel>
     {
@@ -141,51 +90,58 @@ builder.Services.AddSingleton<CurrencyStrengthModel>(_ =>
         new() { Currency = "USD", CarryWeight = 1m, GrowthWeight = 1m, InflationWeight = 1m, RiskWeight = 1m }
     }));
 
-// ── HTTP Clients ───────────────────────────────────────────────────────────────
-builder.Services.AddHttpClient();
+// ── HTTP Clients ──────────────────────────────────────────────────────────────
 
-
-
-builder.Services.AddHttpClient("Massive", client =>
+// Massive Client (Forex API)
+builder.Services.AddHttpClient<MassiveClient>(client =>
 {
-    client.BaseAddress = new Uri("https://api.massive.com/");
+    client.BaseAddress = new Uri(configuration["Massive:BaseUrl"]!);
+    client.DefaultRequestHeaders.Add("Authorization", $"Bearer {configuration["Massive:ApiKey"]}");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
-// ── Providers ──────────────────────────────────────────────────────────────────
-builder.Services.AddScoped<IMassiveDataProvider, MassiveDataProvider>();
+// Trading Economics Client (if it needs HTTP client)
+builder.Services.AddHttpClient<ITradingEconomicsClient, TradingEconomicsClient>(client =>
+{
+    client.BaseAddress = new Uri(configuration["TradingEconomics:BaseUrl"]!);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+// ── Repositories ──────────────────────────────────────────────────────────────
+ builder.Services.AddScoped<IMarketDataRepository, MarketDataRepository>();
+builder.Services.AddScoped<IMassiveForexRepository, MassiveForexRepository>();
 
 
-builder.Services.AddScoped<MassiveDataProvider>();
 
-// ── Services ───────────────────────────────────────────────────────────────────
-builder.Services.AddScoped<IMarketDataEngine, MarketDataEngine>();
-builder.Services.AddScoped<IMarketDataRepository, MarketDataRepository>();
+// ── Factories ─────────────────────────────────────────────────────────────────
+builder.Services.AddScoped<TradePlanFactory>();  // Add this
+
+// ── Providers ─────────────────────────────────────────────────────────────────
 builder.Services.AddScoped<IOrderBookProvider, OrderBookProvider>();
+
+// ── Services ──────────────────────────────────────────────────────────────────
 builder.Services.AddScoped<IAuditStorage, AuditStorage>();
 builder.Services.AddScoped<ICacheService, MemoryCacheService>();
-builder.Services.AddScoped<IMarketDataDocumentStore, MarketDataDocumentStore>();
 builder.Services.AddScoped<IGmailSignalNotificationService, GmailSignalNotificationService>();
-builder.Services.AddScoped(typeof(IRepository<>), typeof(InMemoryRepository<>));
 builder.Services.AddScoped<IExecutionCostModel, SimpleExecutionCostModel>();
 builder.Services.AddScoped<ILatencyModel, SimpleLatencyModel>();
 builder.Services.AddScoped<ICorrelatedShockGenerator, CorrelatedShockGenerator>();
 builder.Services.AddScoped<IVolatilityService, VolatilityService>();
-builder.Services.AddScoped<ITradingEconomicsClient, TradingEconomicsClient>();
 builder.Services.AddScoped<INewsEventService, NewsEventService>();
 builder.Services.AddScoped<IMacroTransitionModel, MacroTransitionModel>();
 builder.Services.AddScoped<IMarketDataService, MarketDataService>();
 builder.Services.AddScoped<IOrderBookExecutionService, OrderBookExecutionService>();
 builder.Services.AddScoped<IIngestionValidator, IngestionValidator>();
-builder.Services.Configure<AppConfiguration>(builder.Configuration);
-builder.Services.AddScoped<TradePlanFactory>();
-// ── Engines ────────────────────────────────────────────────────────────────────
-builder.Services.AddScoped<ConfigurationEngine>();
-builder.Services.AddScoped<ScenarioEngine>();
-builder.Services.AddScoped<ExitEngine>();
+
+// Concrete service implementations
 builder.Services.AddScoped<FxRelativePricer>();
 builder.Services.AddScoped<FxPriceSimulator>();
-builder.Services.AddScoped<AdvancedExecutionEngine>();
+
+// ── Engines ───────────────────────────────────────────────────────────────────
+builder.Services.AddScoped<IMarketDataEngine, MarketDataEngine>();
+builder.Services.AddScoped<IMarketDataDocumentStore, MarketDataDocumentStore>();
 builder.Services.AddScoped<IAdvancedExecutionEngine, AdvancedExecutionEngine>();
 builder.Services.AddScoped<IAlertEngine, AlertEngine>();
 builder.Services.AddScoped<IAlphaEngine, AlphaEngine>();
@@ -196,7 +152,6 @@ builder.Services.AddScoped<IComplianceEngine, ComplianceEngine>();
 builder.Services.AddScoped<ICorrelationEngine, CorrelationEngine>();
 builder.Services.AddScoped<IConfigurationEngine, ConfigurationEngine>();
 builder.Services.AddScoped<IDataQualityEngine, DataQualityEngine>();
-
 builder.Services.AddScoped<IEconomicCalendarRiskEngine, EconomicCalendarRiskEngine>();
 builder.Services.AddScoped<IExecutionEngine, ExecutionEngine>();
 builder.Services.AddScoped<IExitEngine, ExitEngine>();
@@ -220,8 +175,21 @@ builder.Services.AddScoped<IScenarioEngine, ScenarioEngine>();
 builder.Services.AddScoped<ISentimentEngine, SentimentEngine>();
 builder.Services.AddScoped<ITradeLifecycleEngine, TradeLifecycleEngine>();
 
-// ── Quartz + MarketDataSyncService (streams from Massive every minute) ─────────
-builder.Services.AddMarketDataPersistence(builder.Configuration);
+// Concrete engine implementations (without interfaces)
+builder.Services.AddScoped<AdvancedExecutionEngine>();
+builder.Services.AddScoped<ConfigurationEngine>();
+builder.Services.AddScoped<ScenarioEngine>();
+builder.Services.AddScoped<ExitEngine>();
+
+// ── Background Services ───────────────────────────────────────────────────────
+builder.Services.AddHostedService<MassiveBackgroundService>();
+
+// Note: If you have both MassiveBackgroundService and MassiveDataCollectionService,
+// you should choose one to avoid duplicate data collection. Remove or comment out:
+// builder.Services.AddHostedService<MassiveDataCollectionService>();
+
+// ── Generic Repository ────────────────────────────────────────────────────────
+builder.Services.AddScoped(typeof(IRepository<>), typeof(InMemoryRepository<>));
 
 // ── CORS ───────────────────────────────────────────────────────────────────────
 builder.Services.AddCors(options =>
@@ -235,7 +203,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// ── Rate Limiting ──────────────────────────────────────────────────────────────
+// ── Rate Limiting ─────────────────────────────────────────────────────────────
 builder.Services.AddRateLimiter(options =>
 {
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(
@@ -249,9 +217,53 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
-// ── Pipeline ───────────────────────────────────────────────────────────────────
+// ── Marten/PostgreSQL ─────────────────────────────────────────────────────────
+builder.Services.AddMarten(options =>
+{
+    options.Connection(configuration.GetConnectionString("OrionMacroDbConnection")!);
+    options.AutoCreateSchemaObjects = AutoCreate.All;
+
+    // Register your document types
+    options.Schema.For<MarketDataSnapshot>()
+        .Identity(x => x.Id);
+
+    options.Schema.For<CandleDocument>()
+        .Identity(x => x.Id);
+
+    options.Schema.For<TradePlan>()
+        .Identity(x => x.Id);
+
+    options.Schema.For<MacroSnapshotDocument>()
+        .Identity(x => x.Id);
+
+    options.Schema.For<EconomySeriesDocument>()
+        .Identity(x => x.Id);
+
+    options.Schema.For<ForexSnapshotDocument>()
+        .Identity(x => x.Id);
+
+    options.Schema.For<ForexTickerDocument>()
+        .Identity(x => x.Ticker);
+
+    options.Schema.For<ForexQuoteDocument>()
+        .Identity(x => x.Id);
+
+    options.Schema.For<ConversionDocument>()
+        .Identity(x => x.Id);
+
+    options.Schema.For<IndicatorDocument>()
+        .Identity(x => x.Id);
+
+    options.Schema.For<MarketStatusDocument>()
+        .Identity(x => x.Id);
+
+    options.Schema.For<MarketHolidayDocument>()
+        .Identity(x => x.Id);
+});
+
 var app = builder.Build();
 
+// ── Middleware Pipeline ────────────────────────────────────────────────────────
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
