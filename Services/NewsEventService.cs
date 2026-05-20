@@ -6,6 +6,14 @@ public class NewsEventService: INewsEventService
 {
     public Task<bool> IsHighImpactEventAsync(DateTime time)
     {
-        throw new NotImplementedException();
+        // Placeholder logic:
+        // You should replace with TradingEconomics calendar
+
+        var hour = time.Hour;
+
+        // Simulate common macro release windows
+        var isEvent = hour == 12 || hour == 14;
+
+        return Task.FromResult(isEvent);
     }
 }

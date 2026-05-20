@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using Orion.MacroEconomics.Configuration;
+using Orion.MacroEconomics.Configurations;
 using Orion.MacroEconomics.Entities;
 using Orion.MacroEconomics.Interfaces;
 

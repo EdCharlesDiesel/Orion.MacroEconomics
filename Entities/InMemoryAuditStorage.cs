@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using Orion.MacroEconomics.Interfaces;
+using Orion.MacroEconomics.Engine.Interfaces;
 
 namespace Orion.MacroEconomics.Entities;
 

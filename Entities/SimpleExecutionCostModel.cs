@@ -1,4 +1,4 @@
-﻿using Orion.MacroEconomics.Interfaces;
+﻿using Orion.MacroEconomics.Engine.Interfaces;
 
 namespace Orion.MacroEconomics.Entities
 {

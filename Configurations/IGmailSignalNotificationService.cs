@@ -1,6 +1,6 @@
 using Orion.MacroEconomics.Entities;
 
-namespace Orion.MacroEconomics.Configuration;
+namespace Orion.MacroEconomics.Configurations;
 
 public interface IGmailSignalNotificationService
 {

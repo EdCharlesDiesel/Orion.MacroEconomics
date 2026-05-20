@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Orion.MacroEconomics.Commands;
 using Orion.MacroEconomics.Entities;
-using Orion.MacroEconomics.Interfaces;
+using Orion.MacroEconomics.Repository.Interfaces;
 
 namespace Orion.MacroEconomics.Handlers
 {

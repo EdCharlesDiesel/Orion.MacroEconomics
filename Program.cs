@@ -3,32 +3,27 @@ using System.Threading.RateLimiting;
 using JasperFx;
 using Marten;
 using Microsoft.OpenApi.Models;
-using Orion.MacroEconomics.Configuration;
-using Orion.MacroEconomics.Data;
+using Orion.MacroEconomics.Configurations;
 using Orion.MacroEconomics.Engine;
 using Orion.MacroEconomics.Engine.Interfaces;
 using Orion.MacroEconomics.Engine.Interfaces.Orion.API.TradingEconomics.Engine.Interfaces;
 using Orion.MacroEconomics.Entities;
 using Orion.MacroEconomics.Extensions;
 using Orion.MacroEconomics.Helpers;
+using Orion.MacroEconomics.Helpers.Interfaces;
 using Orion.MacroEconomics.Interfaces;
 using Orion.MacroEconomics.Jobs;
 using Orion.MacroEconomics.Models;
-using Orion.MacroEconomics.Providers;
-using Orion.MacroEconomics.Providers.Interfaces;
 using Orion.MacroEconomics.Repository;
 using Orion.MacroEconomics.Repository.Interfaces;
 using Orion.MacroEconomics.Services;
-using Weasel.Core;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Get configuration reference early
 var configuration = builder.Configuration;
 
-// ── Core ───────────────────────────────────────────────────────────────────────
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddMemoryCache();
@@ -58,8 +53,6 @@ builder.Services.AddSwaggerGen(options =>
     if (File.Exists(xmlPath))
         options.IncludeXmlComments(xmlPath);
 });
-
-// ── Configuration ──────────────────────────────────────────────────────────────
 builder.Services.Configure<AppConfiguration>(
     configuration.GetSection("AppConfiguration"));
 
@@ -71,10 +64,10 @@ builder.Services.Configure<MarketPipelineOptions>(options =>
     options.EnableEnrichment       = true;
 });
 
-builder.Services.Configure<GmailOptions>(
-    configuration.GetSection("Gmail"));
+// builder.Services.Configure<GmailOptions>(
+//     configuration.GetSection("Gmail"));
 
-// Normalization options
+
 builder.Services.AddSingleton(new NormalizationOptions
 {
     MinimumWindowSize = 6,
@@ -101,47 +94,23 @@ builder.Services.AddHttpClient<MassiveClient>(client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
-// Trading Economics Client (if it needs HTTP client)
-builder.Services.AddHttpClient<ITradingEconomicsClient, TradingEconomicsClient>(client =>
-{
-    client.BaseAddress = new Uri(configuration["TradingEconomics:BaseUrl"]!);
-    client.DefaultRequestHeaders.Add("Accept", "application/json");
-    client.Timeout = TimeSpan.FromSeconds(30);
-});
 
-// ── Repositories ──────────────────────────────────────────────────────────────
- builder.Services.AddScoped<IMarketDataRepository, MarketDataRepository>();
+builder.Services.AddScoped<IMarketDataRepository, MarketDataRepository>();
 builder.Services.AddScoped<IMassiveForexRepository, MassiveForexRepository>();
-
-
-
-// ── Factories ─────────────────────────────────────────────────────────────────
-builder.Services.AddScoped<TradePlanFactory>();  // Add this
-
-// ── Providers ─────────────────────────────────────────────────────────────────
-builder.Services.AddScoped<IOrderBookProvider, OrderBookProvider>();
-
-// ── Services ──────────────────────────────────────────────────────────────────
+builder.Services.AddScoped<TradePlanFactory>();
 builder.Services.AddScoped<IAuditStorage, AuditStorage>();
 builder.Services.AddScoped<ICacheService, MemoryCacheService>();
-builder.Services.AddScoped<IGmailSignalNotificationService, GmailSignalNotificationService>();
 builder.Services.AddScoped<IExecutionCostModel, SimpleExecutionCostModel>();
 builder.Services.AddScoped<ILatencyModel, SimpleLatencyModel>();
 builder.Services.AddScoped<ICorrelatedShockGenerator, CorrelatedShockGenerator>();
 builder.Services.AddScoped<IVolatilityService, VolatilityService>();
 builder.Services.AddScoped<INewsEventService, NewsEventService>();
 builder.Services.AddScoped<IMacroTransitionModel, MacroTransitionModel>();
-builder.Services.AddScoped<IMarketDataService, MarketDataService>();
 builder.Services.AddScoped<IOrderBookExecutionService, OrderBookExecutionService>();
 builder.Services.AddScoped<IIngestionValidator, IngestionValidator>();
-
-// Concrete service implementations
 builder.Services.AddScoped<FxRelativePricer>();
 builder.Services.AddScoped<FxPriceSimulator>();
-
-// ── Engines ───────────────────────────────────────────────────────────────────
 builder.Services.AddScoped<IMarketDataEngine, MarketDataEngine>();
-builder.Services.AddScoped<IMarketDataDocumentStore, MarketDataDocumentStore>();
 builder.Services.AddScoped<IAdvancedExecutionEngine, AdvancedExecutionEngine>();
 builder.Services.AddScoped<IAlertEngine, AlertEngine>();
 builder.Services.AddScoped<IAlphaEngine, AlphaEngine>();
@@ -174,8 +143,6 @@ builder.Services.AddScoped<IRegimeEngine, RegimeEngine>();
 builder.Services.AddScoped<IScenarioEngine, ScenarioEngine>();
 builder.Services.AddScoped<ISentimentEngine, SentimentEngine>();
 builder.Services.AddScoped<ITradeLifecycleEngine, TradeLifecycleEngine>();
-
-// Concrete engine implementations (without interfaces)
 builder.Services.AddScoped<AdvancedExecutionEngine>();
 builder.Services.AddScoped<ConfigurationEngine>();
 builder.Services.AddScoped<ScenarioEngine>();
@@ -216,6 +183,23 @@ builder.Services.AddRateLimiter(options =>
                 Window            = TimeSpan.FromMinutes(1)
             }));
 });
+
+// Register repositories
+builder.Services.AddScoped<IForexEventRepository, ForexEventRepository>();
+builder.Services.AddScoped<IForexNewsRepository, ForexNewsRepository>();
+
+// Register services
+builder.Services.AddHttpClient<ForexEventScraperService>(client =>
+{
+    client.DefaultRequestHeaders.Add("User-Agent", "ForexNewsService/1.0");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+// Register engine
+builder.Services.AddScoped<INewsEngine, NewsEngine>();
+
+// Register background service
+builder.Services.AddHostedService<ForexDataBackgroundService>();
 
 // ── Marten/PostgreSQL ─────────────────────────────────────────────────────────
 builder.Services.AddMarten(options =>

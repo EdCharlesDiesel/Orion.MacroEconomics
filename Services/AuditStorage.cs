@@ -1,5 +1,5 @@
+using Orion.MacroEconomics.Engine.Interfaces;
 using Orion.MacroEconomics.Entities;
-using Orion.MacroEconomics.Interfaces;
 
 namespace Orion.MacroEconomics.Services;
 

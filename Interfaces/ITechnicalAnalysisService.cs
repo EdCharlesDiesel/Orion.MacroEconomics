@@ -78,7 +78,7 @@ namespace Orion.MacroEconomics.Interfaces
         /// <summary>
         /// Check if there's a valid entry setup
         /// </summary>
-        bool HasValidEntrySetup(List<OhlcvBar> data15M,string bias,out List<string> reasons);     
-        
+        bool HasValidEntrySetup(List<OhlcvBar> data15M,string bias,out List<string> reasons);
+
     }
 }

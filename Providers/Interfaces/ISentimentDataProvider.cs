@@ -1,6 +1,6 @@
 ﻿using Orion.MacroEconomics.Entities;
 
-namespace Orion.MacroEconomics.Interfaces
+namespace Orion.MacroEconomics.Providers.Interfaces
 {
     public interface ISentimentDataProvider
     {

@@ -1,4 +1,4 @@
-﻿namespace Orion.MacroEconomics.Interfaces
+﻿namespace Orion.MacroEconomics.Repository.Interfaces
 {
 
 

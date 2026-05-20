@@ -1,7 +1,7 @@
 
 using Orion.MacroEconomics.DTO;
 
-namespace Orion.MacroEconomics.Interfaces
+namespace Orion.MacroEconomics.Providers.Interfaces
 {
     public interface IRegimeDataProvider
     {

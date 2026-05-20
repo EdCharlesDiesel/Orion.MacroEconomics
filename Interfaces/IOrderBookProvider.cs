@@ -12,8 +12,5 @@ namespace Orion.MacroEconomics.Interfaces
         Task<decimal> SimulateLatencyMsAsync();
     }
 
-    public interface INewsEventService
-    {
-        Task<bool> IsHighImpactEventAsync(DateTime time);
-    }
+
 }

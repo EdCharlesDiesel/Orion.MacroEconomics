@@ -1,6 +1,6 @@
 ﻿using Orion.MacroEconomics.Engine;
 using Orion.MacroEconomics.Entities;
-using Orion.MacroEconomics.Interfaces;
+using Orion.MacroEconomics.Helpers.Interfaces;
 
 namespace Orion.MacroEconomics.Helpers
 {
@@ -11,10 +11,6 @@ namespace Orion.MacroEconomics.Helpers
         public class ProbabilisticScenarioGenerator(ScenarioEngine scenarioEngine) : IProbabilisticScenarioGenerator
         {
             private readonly Random _rand = new();
-
-            // -------------------------------
-            // Generate probabilistic scenarios
-            // -------------------------------
             public List<ProbabilisticScenario> Generate(int simulations)
             {
                 var scenarios = new List<ProbabilisticScenario>();

@@ -1,5 +1,5 @@
 using Orion.MacroEconomics.Entities;
-using Orion.MacroEconomics.Interfaces;
+using Orion.MacroEconomics.Helpers.Interfaces;
 
 namespace Orion.MacroEconomics.Helpers;
 public sealed class IngestionValidator : IIngestionValidator

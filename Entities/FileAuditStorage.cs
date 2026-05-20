@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.Options;
-using Orion.MacroEconomics.Interfaces;
+using Orion.MacroEconomics.Engine.Interfaces;
 
 namespace Orion.MacroEconomics.Entities;
 

@@ -1,6 +1,6 @@
 ﻿using Orion.MacroEconomics.Entities;
 
-namespace Orion.MacroEconomics.Interfaces
+namespace Orion.MacroEconomics.Helpers.Interfaces
 {
     public interface IProbabilisticScenarioGenerator
     {

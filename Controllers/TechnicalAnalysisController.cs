@@ -8,28 +8,22 @@ namespace Orion.MacroEconomics.Controllers
 
     [ApiController]
     [Route("api/[controller]")]
-    public class TechnicalAnalysisController : ControllerBase
+    public class TechnicalAnalysisController(
+        ITechnicalAnalysisService taService,
+        ILogger<TechnicalAnalysisController> logger)
+        : ControllerBase
     {
-        private readonly ITechnicalAnalysisService _taService;
-        private readonly ILogger<TechnicalAnalysisController> _logger;
-
-        public TechnicalAnalysisController(ITechnicalAnalysisService taService,IYahooFinanceService yahooService, ILogger<TechnicalAnalysisController> logger)
-        {
-            _taService = taService;
-            _logger = logger;
-        }
-
         [HttpPost("calculate")]
         public ActionResult<TechnicalIndicators> CalculateIndicators([FromBody] List<OhlcvBar> data)
         {
             try
             {
-                var indicators = _taService.CalculateIndicators(data);
+                var indicators = taService.CalculateIndicators(data);
                 return Ok(indicators);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error calculating indicators");
+                logger.LogError(ex, "Error calculating indicators");
                 return StatusCode(500, new { error = ex.Message });
             }
         }
@@ -45,7 +39,7 @@ namespace Orion.MacroEconomics.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error calculating entry signal");
+                logger.LogError(ex, "Error calculating entry signal");
                 return StatusCode(500, new { error = ex.Message });
             }
         }
@@ -56,12 +50,12 @@ namespace Orion.MacroEconomics.Controllers
             try
             {
                 // In production, fetch all data first
-                var ideas = await _taService.GenerateTradingIdeasAsync(new(), cancellationToken);
+                var ideas = await taService.GenerateTradingIdeasAsync(new(), cancellationToken);
                 return Ok(ideas);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error generating trading ideas");
+                logger.LogError(ex, "Error generating trading ideas");
                 return StatusCode(500, new { error = ex.Message });
             }
         }
@@ -71,12 +65,12 @@ namespace Orion.MacroEconomics.Controllers
         {
             try
             {
-                var ideas = await _taService.GenerateSwingIdeasAsync(new(), cancellationToken);
+                var ideas = await taService.GenerateSwingIdeasAsync(new(), cancellationToken);
                 return Ok(ideas);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error generating swing ideas");
+                logger.LogError(ex, "Error generating swing ideas");
                 return StatusCode(500, new { error = ex.Message });
             }
         }
@@ -86,12 +80,12 @@ namespace Orion.MacroEconomics.Controllers
         {
             try
             {
-                var results = await _taService.GenerateBiasDashboardAsync(new(), cancellationToken);
+                var results = await taService.GenerateBiasDashboardAsync(new(), cancellationToken);
                 return Ok(results);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error generating bias dashboard");
+                logger.LogError(ex, "Error generating bias dashboard");
                 return StatusCode(500, new { error = ex.Message });
             }
         }
