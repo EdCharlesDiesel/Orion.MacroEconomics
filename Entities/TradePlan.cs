@@ -1,13 +1,9 @@
-﻿using Orion.MacroEconomics.Enum;
-
-namespace Orion.MacroEconomics.Entities
+﻿namespace Orion.MacroEconomics.Entities
 {
     public sealed class TradePlan
     {
         public Guid Id { get; set; }
-
         public string Status { get; set; }
-       // public TradePlanStatus Status { get; set; }
         public string Pair { get; set; } = "";
         public string Direction { get; set; } = "";
         public decimal EntryPrice { get; set; }

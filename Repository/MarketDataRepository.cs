@@ -145,48 +145,14 @@ public sealed class MarketDataRepository(IDocumentStore store, ILogger<MarketDat
             plan.RiskReward);
     }
 
-    public async Task InsertTradePlansAsync(IEnumerable<TradePlan> plans, CancellationToken ct = default)
+    public async Task InsertTradePlansAsync(IEnumerable<TradePlan> plans, CancellationToken ct)
     {
-        throw new NotImplementedException();
-        // ArgumentNullException.ThrowIfNull(plans);
-        //
-        // var list = plans.ToList();
-        //
-        // if (list.Count == 0)
-        //     return;
-        //
-        // await using var session = store.LightweightSession();
-        //
-        // // Filter out plans that already exist
-        // var ids = list.Select(p => p.Id).ToHashSet();
-        // var existingIds = await session.Query<TradePlan>()
-        //     .Where(p => p.Id.IsOneOf(ids))
-        //     .Select(p => p.Id)
-        //     .ToListAsync(ct);
-        //
-        // var existingIdSet = existingIds.ToHashSet();
-        // var newPlans = list.Where(p => !existingIdSet.Contains(p.Id)).ToList();
-        //
-        // if (newPlans.Count == 0)
-        // {
-        //     log.LogWarning("All {Count} trade plans already exist, skipping insert", list.Count);
-        //     return;
-        // }
-        //
-        // if (existingIdSet.Count > 0)
-        // {
-        //     log.LogWarning("Skipping {Count} duplicate trade plans", existingIdSet.Count);
-        // }
-        //
-        // foreach (var plan in newPlans)
-        // {
-        //     session.Insert(plan);
-        // }
-        //
-        // await session.SaveChangesAsync(ct);
-        //
-        // log.LogInformation("Inserted {Count} new trade plans (skipped {Skipped} duplicates)",
-        //     newPlans.Count, existingIdSet.Count);
+        using var session = store.LightweightSession();
+        foreach (var plan in plans)
+        {
+            session.Store(plan);
+        }
+        await session.SaveChangesAsync(ct);
     }
 
     // Remove the duplicate method or delegate to the main one

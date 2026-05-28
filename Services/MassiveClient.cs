@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using Orion.MacroEconomics.Entities;
 using Orion.MacroEconomics.Models;
 
 namespace Orion.MacroEconomics.Services;
@@ -305,5 +306,10 @@ public sealed class MassiveClient(HttpClient http, ILogger<MassiveClient> log)
         {
             _throttle.Release();
         }
+    }
+
+    public async Task<List<OhlcvBar>> GetDailyBarsAsync(string symbol, int i, CancellationToken ct)
+    {
+        throw new NotImplementedException();
     }
 }

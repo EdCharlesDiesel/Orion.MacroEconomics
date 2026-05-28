@@ -11,7 +11,7 @@ public class ForexEvent
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public DateTime EventDate { get; set; }
-    public DateTime? Actual { get; set; }
+    public decimal? Actual { get; set; }
     public decimal? Forecast { get; set; }
     public decimal? Previous { get; set; }
     public string Impact { get; set; } = "Low";

@@ -38,6 +38,7 @@ public sealed class MassiveBackgroundService(IServiceScopeFactory scopeFactory, 
 
         await RunStartupTasksAsync(ct);
 
+
         while (!ct.IsCancellationRequested)
         {
             var now = DateTime.UtcNow;
@@ -108,6 +109,35 @@ public sealed class MassiveBackgroundService(IServiceScopeFactory scopeFactory, 
 
         log.LogInformation("MassiveForexBackgroundService stopped");
     }
+
+    // public async Task ExecuteDailyStrategyAsync()
+    // {
+    //
+    //     var dailyData = await _massiveClient.GetDailyBarsAsync(symbol);
+    //     var smaValues = new Dictionary<int, decimal>
+    //     {
+    //         [200] = CalculateSMA(dailyData, 200),
+    //         [55] = CalculateSMA(dailyData, 55),
+    //         [21] = CalculateSMA(dailyData, 21),
+    //         [8] = CalculateSMA(dailyData, 8),
+    //         [5] = CalculateSMA(dailyData, 5)
+    //     };
+    //
+    //     // 3. Calculate pivot points
+    //     var pivots = CalculateStandardPivots(dailyData.High, dailyData.Low, dailyData.Close);
+    //
+    //     // 4. Get ATR for volatility
+    //     decimal atr = CalculateATR(dailyData, 14);
+    //
+    //     // 5. Generate signal
+    //     var signal = await AnalyzeSignalAsync(symbol, smaValues, dailyData, pivots, atr);
+    //
+    //     // 6. Execute if confidence > 70%
+    //     if (signal.Confidence >= 70 && _riskManager.ValidateTrade(signal, accountEquity, tradesToday, todayPnL))
+    //     {
+    //         await ExecuteTradeAsync(signal);
+    //     }
+    // }
 
     private async Task RunStartupTasksAsync(CancellationToken ct)
     {
