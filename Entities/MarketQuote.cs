@@ -9,6 +9,6 @@
         public decimal Spread => Ask - Bid;
         public DateTime TimestampUtc { get; set; }
         public string Source { get; set; } = "";
-        public dynamic Last { get; set; }
+        public dynamic Last { get; set; } = null!;
     }
 }

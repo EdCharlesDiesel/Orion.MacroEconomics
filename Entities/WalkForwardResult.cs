@@ -8,5 +8,5 @@ public class WalkForwardResult
     public DateTime TestEnd { get; set; }
     public int TrainTradeCount { get; set; }
     public int TestTradeCount { get; set; }
-    public List<TradeResult> TestTrades { get; set; }
+    public List<TradeResult> TestTrades { get; set; } = new();
 }

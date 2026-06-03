@@ -194,8 +194,6 @@ public static partial class ServiceCollectionExtensions
 
         services.AddScoped<DailySmaPivotStrategy>();
         services.AddScoped<RiskManagementService>();
-        services.AddScoped<IRepository<StrategySignal>, MongoRepository<StrategySignal>>();
-        services.AddScoped<IRepository<TradeExecution>, MongoRepository<TradeExecution>>();
 
         // Add Quartz for scheduling
         services.AddQuartz(q =>
@@ -209,8 +207,6 @@ public static partial class ServiceCollectionExtensions
         });
         services.AddQuartzHostedService();
 
-        // Configuration
-        services.Configure<StrategySettings>(configuration.GetSection("Strategy"));
         // Concrete implementations
         services.AddScoped<AdvancedExecutionEngine>();
         services.AddScoped<ConfigurationEngine>();

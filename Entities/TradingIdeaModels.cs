@@ -41,8 +41,8 @@ namespace Orion.MacroEconomics.Entities
         public Dictionary<string, TimeframeBiasData> Timeframes { get; set; } = new();
         public DateTime Timestamp { get; internal set; }
         public bool IsTradeable { get; internal set; }
-        public string Error { get; internal set; }
-        public object TimeframeBiases { get; internal set; }
+        public string Error { get; internal set; } = string.Empty;
+        public object TimeframeBiases { get; internal set; } = new();
     }
 
     public class TimeframeBiasData

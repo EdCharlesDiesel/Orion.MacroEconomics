@@ -2,7 +2,7 @@ namespace Orion.MacroEconomics.Services;
 
 public class FredServiceOptions
 {
-    public string ApiKey { get; set; }
+    public string ApiKey { get; set; } = string.Empty;
     public int MaxRetries { get; set; } = 3;
     public int CircuitBreakerThreshold { get; set; } = 5;
     public int CircuitBreakerDurationSeconds { get; set; } = 60;

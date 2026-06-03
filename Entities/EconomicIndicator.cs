@@ -12,7 +12,7 @@
         public decimal? Forecast { get; set; }
 
         public string Frequency { get; set; } = "Monthly";
-        public string Event { get; internal set; }
+        public string Event { get; internal set; } = string.Empty;
         public decimal? Actual { get; internal set; }
     }
 }

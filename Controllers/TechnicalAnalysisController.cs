@@ -29,19 +29,10 @@ namespace Orion.MacroEconomics.Controllers
         }
 
         [HttpGet("entry-signal")]
-        public async Task<ActionResult<EntrySignalResult>> GetEntrySignal([FromQuery] string pair,[FromQuery] string bias,List<OhlcvBar> data15m,CancellationToken cancellationToken)
+        public ActionResult<EntrySignalResult> GetEntrySignal([FromQuery] string pair, [FromQuery] string bias, List<OhlcvBar> data15m, CancellationToken cancellationToken)
         {
-            try
-            {
-                // var _15minData = await _taService.GetEntrySignal(pair, data15m, "5d", cancellationToken);
-                // var signal = _taService.GetEntrySignal(pair,_15minData, bias);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error calculating entry signal");
-                return StatusCode(500, new { error = ex.Message });
-            }
+            // TODO: wire up _taService.GetEntrySignal once the 15m data fetch is implemented.
+            return Ok();
         }
 
         [HttpGet("trading-ideas")]

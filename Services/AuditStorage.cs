@@ -51,7 +51,7 @@ public sealed class AuditStorage : IAuditStorage
         });
     }
 
-    public Task<AuditEntry> GetByIdAsync(Guid id)
+    public Task<AuditEntry?> GetByIdAsync(Guid id)
     {
         if (id == Guid.Empty)
             throw new ArgumentException("Audit id is required.", nameof(id));
@@ -63,7 +63,7 @@ public sealed class AuditStorage : IAuditStorage
             if (entry == null)
                 throw new KeyNotFoundException($"Audit entry not found: {id}");
 
-            return Task.FromResult(entry);
+            return Task.FromResult<AuditEntry?>(entry);
         }
     }
 

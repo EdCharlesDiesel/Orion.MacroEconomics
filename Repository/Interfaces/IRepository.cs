@@ -1,14 +1,9 @@
-﻿using Orion.MacroEconomics.Models;
+namespace Orion.MacroEconomics.Repository.Interfaces;
 
-namespace Orion.MacroEconomics.Repository.Interfaces
+public interface IRepository<T>
 {
-
-
-    public interface IRepository<T>
-    {
-        Task AddRangeAsync(IEnumerable<T> entities);
-        Task<IEnumerable<T>> GetAllAsync();
-        Task<List<TradeExecution>> GetAsync(Func<object, bool> func);
-        Task AddAsync(StrategySignal signal);
-    }
+    Task AddAsync(T entity);
+    Task AddRangeAsync(IEnumerable<T> entities);
+    Task<IEnumerable<T>> GetAllAsync();
+    Task<IEnumerable<T>> GetAsync(Func<T, bool> predicate);
 }

@@ -6,7 +6,7 @@ public sealed class MacroSimulationResult
 {
     public string Direction { get; set; } = "NEUTRAL";
     public decimal Confidence { get; set; }
-    public List<MacroState> States { get; set; }
+    public List<MacroState> States { get; set; } = new();
     public MarketRegime FinalRegime { get; set; }
     public double SuccessRate { get; set; }
     public DateTime TimestampUtc { get; set; }

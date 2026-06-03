@@ -158,7 +158,7 @@ namespace Orion.MacroEconomics.Services
             var normalizedCurrencies = NormalizeCurrencies(currencies);
             var cacheKey = BuildCacheKey(normalizedCurrencies);
 
-            if (_cache.TryGetValue<MacroData>(cacheKey, out var cached))
+            if (_cache.TryGetValue<MacroData>(cacheKey, out var cached) && cached is not null)
             {
                 if (!IsStale(cached))
                 {
@@ -299,7 +299,7 @@ namespace Orion.MacroEconomics.Services
 
             try
             {
-                if (_cache.TryGetValue<MacroData>(cacheKey, out var cached) && !IsStale(cached))
+                if (_cache.TryGetValue<MacroData>(cacheKey, out var cached) && cached is not null && !IsStale(cached))
                     return cached;
 
                 var apiKey = ResolveApiKey();
@@ -614,7 +614,8 @@ namespace Orion.MacroEconomics.Services
             return _configuration["FRED_API_KEY"]
                    ?? _configuration["FredApi:Key"]
                    ?? _options.ApiKey
-                   ?? Environment.GetEnvironmentVariable("FRED_API_KEY");
+                   ?? Environment.GetEnvironmentVariable("FRED_API_KEY")
+                   ?? string.Empty;
         }
 
         private bool IsStale(MacroData data)
@@ -662,7 +663,7 @@ namespace Orion.MacroEconomics.Services
                 Data = data,
                 IsLive = true,
                 LastUpdated = DateTime.UtcNow,
-                Warning = warning,
+                Warning = warning ?? string.Empty,
                 DataSource = "FRED API"
             };
         }

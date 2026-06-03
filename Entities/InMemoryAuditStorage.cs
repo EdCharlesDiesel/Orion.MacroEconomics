@@ -52,7 +52,7 @@ public class InMemoryAuditStorage : IAuditStorage
         });
     }
 
-    public Task<AuditEntry> GetByIdAsync(Guid id)
+    public Task<AuditEntry?> GetByIdAsync(Guid id)
     {
         _store.TryGetValue(id, out var entry);
         return Task.FromResult(entry);

@@ -7,6 +7,6 @@ public class ComplianceRequest
     public string? Pair { get; set; }
     public string? Direction { get; set; }
     public int RequestedSize { get; set; }
-    public AccountSnapshot Account { get; set; }
-    public RealTimeRiskResult Risk { get; set; }
+    public AccountSnapshot Account { get; set; } = new();
+    public RealTimeRiskResult Risk { get; set; } = new();
 }

@@ -63,7 +63,7 @@ public class DailyTradingStrategyJob : IJob
                 return;
             }
 
-            var openTrades = await _tradeRepo.GetAsync(t => t.Status == "OPEN");
+            var openTrades = (await _tradeRepo.GetAsync(t => t.Status == "OPEN")).ToList();
             var accountEquity = await GetAccountEquity();
 
             foreach (var symbol in symbols)
@@ -195,26 +195,18 @@ public class DailyTradingStrategyJob : IJob
         // await _brokerService.PlaceOrderAsync(trade);
     }
 
-    private async Task<DailyStrategyState> GetOrCreateDailyState(DateTime date)
-    {
-        // Implement storage/retrieval of daily state from database
-        return new DailyStrategyState
+    private Task<DailyStrategyState> GetOrCreateDailyState(DateTime date)
+        => Task.FromResult(new DailyStrategyState
         {
             Date = date,
             TradesExecuted = 0,
             DailyPnL = 0,
             MaxLossHit = false
-        };
-    }
+        });
 
-    private async Task UpdateDailyState(DailyStrategyState state)
-    {
-        // Implement persistence of daily state
-    }
+    private Task UpdateDailyState(DailyStrategyState state)
+        => Task.CompletedTask;
 
-    private async Task<decimal> GetAccountEquity()
-    {
-        // Get account balance from your system
-        return 100000m; // Placeholder - $100,000 account
-    }
+    private Task<decimal> GetAccountEquity()
+        => Task.FromResult(100_000m);
 }

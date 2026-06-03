@@ -29,9 +29,9 @@
         public string Pair { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public decimal ChangePercent { get; set; }
-        public string Name { get; set; }
-        public dynamic Value { get; set; }
-        public string Source { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public dynamic Value { get; set; } = null!;
+        public string Source { get; set; } = string.Empty;
         public DateTime TimestampUtc { get; set; }
     }
 }

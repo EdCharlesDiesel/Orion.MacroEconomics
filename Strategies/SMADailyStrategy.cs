@@ -11,7 +11,7 @@ public class DailySmaPivotStrategy(ILogger<DailySmaPivotStrategy> logger)
     private const int SMA_8 = 8;
     private const int SMA_5 = 5;
 
-    public async Task<StrategySignal> AnalyzeSignalAsync(
+    public Task<StrategySignal> AnalyzeSignalAsync(
         string symbol,
         List<OhlcvBar> dailyBars,
         PivotLevels pivots,
@@ -60,12 +60,12 @@ public class DailySmaPivotStrategy(ILogger<DailySmaPivotStrategy> logger)
                     symbol, signal.Confidence);
             }
 
-            return signal;
+            return Task.FromResult(signal);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error analyzing signal for {Symbol}", symbol);
-            return new StrategySignal { Status = "ERROR", RejectionReason = ex.Message };
+            return Task.FromResult(new StrategySignal { Status = "ERROR", RejectionReason = ex.Message });
         }
     }
 

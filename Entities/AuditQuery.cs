@@ -7,7 +7,7 @@ public class AuditQuery
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public string? Pair { get; set; }
-    public string Direction { get; set; }
+    public string Direction { get; set; } = string.Empty;
     public AuditRecordType? RecordType { get; set; }
     public Guid? CorrelationId { get; set; }
     public decimal? MinConfidence { get; set; }

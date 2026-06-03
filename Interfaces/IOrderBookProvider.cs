@@ -4,7 +4,7 @@ namespace Orion.MacroEconomics.Interfaces
 {
     public interface IOrderBookProvider
     {
-        Task<OrderBook> GetOrderBookAsync(string pair);
+        Task<OrderBook?> GetOrderBookAsync(string pair);
     }
 
     public interface ILatencyModel

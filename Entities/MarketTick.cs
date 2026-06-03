@@ -6,6 +6,6 @@
         public decimal Bid { get; set; }
         public decimal Ask { get; set; }
         public DateTime Time { get; set; }
-        public string Source { get; set; }
+        public string Source { get; set; } = string.Empty;
     }
 }

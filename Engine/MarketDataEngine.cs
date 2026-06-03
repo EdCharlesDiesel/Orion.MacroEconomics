@@ -17,7 +17,7 @@ public sealed class MarketDataEngine(
             string.Equals(x.Name, providerName, StringComparison.OrdinalIgnoreCase))
         ?? throw new InvalidOperationException($"Provider '{providerName}' is not registered.");
 
-    public async Task<MacroData> GetMacroDataAsync(CancellationToken cancellationToken = default)
+    public async Task<MacroData?> GetMacroDataAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -34,7 +34,7 @@ public sealed class MarketDataEngine(
         }
     }
 
-    public Task<MacroData> RefreshMacroDataAsync(CancellationToken cancellationToken = default)
+    public Task<MacroData?> RefreshMacroDataAsync(CancellationToken cancellationToken = default)
         => GetMacroDataAsync(cancellationToken);
 
     public Dictionary<string, Dictionary<string, string>> GetFredSeriesMappings()

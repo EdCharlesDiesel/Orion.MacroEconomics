@@ -308,8 +308,6 @@ public sealed class MassiveClient(HttpClient http, ILogger<MassiveClient> log)
         }
     }
 
-    public async Task<List<OhlcvBar>> GetDailyBarsAsync(string symbol, int i, CancellationToken ct)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<List<OhlcvBar>> GetDailyBarsAsync(string symbol, int i, CancellationToken ct)
+        => throw new NotImplementedException();
 }

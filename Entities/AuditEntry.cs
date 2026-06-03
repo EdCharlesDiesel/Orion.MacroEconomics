@@ -9,10 +9,10 @@ public class AuditEntry
     public int SequenceNumber { get; set; }
     public AuditRecordType RecordType { get; set; }
     public Guid? CorrelationId { get; set; }
-    public string SessionId { get; set; }
+    public string SessionId { get; set; } = string.Empty;
     public string? Pair { get; set; }
-    public string Direction { get; set; }
+    public string Direction { get; set; } = string.Empty;
     public decimal? Confidence { get; set; }
-    public object Data { get; set; }
+    public object Data { get; set; } = new();
     public DateTime TimestampUtc { get; set; }
 }

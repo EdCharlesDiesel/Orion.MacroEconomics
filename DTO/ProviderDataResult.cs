@@ -8,6 +8,6 @@ public sealed class ProviderDataResult
     public DateTime FromUtc { get; set; }
     public DateTime ToUtc { get; set; }
     public bool Success { get; set; }
-    public string Message { get; set; }
+    public string Message { get; set; } = string.Empty;
     public List<object> Payload { get; set; } = new List<object>(); 
 }

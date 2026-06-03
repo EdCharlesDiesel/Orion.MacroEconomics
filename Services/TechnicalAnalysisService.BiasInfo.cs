@@ -7,7 +7,7 @@
             public int Strength { get; set; }
             public decimal Confidence { get; set; }
             public List<string> Reasons { get; set; } = new();
-            public string Reason { get; internal set; }
+            public string Reason { get; internal set; } = string.Empty;
         }        
     
 }

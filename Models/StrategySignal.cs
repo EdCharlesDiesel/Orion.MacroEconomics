@@ -1,19 +1,19 @@
-﻿namespace Orion.MacroEconomics.Models;
+namespace Orion.MacroEconomics.Models;
 
 public class StrategySignal
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
-    public string Symbol { get; set; }
-    public string Direction { get; set; } // LONG or SHORT
+    public string Symbol { get; set; } = string.Empty;
+    public string Direction { get; set; } = string.Empty; // LONG or SHORT
     public decimal Entry { get; set; }
     public decimal StopLoss { get; set; }
     public List<decimal> TakeProfits { get; set; } = new();
     public int Confidence { get; set; }
     public Dictionary<int, decimal> SmaValues { get; set; } = new();
-    public PivotLevels PivotLevels { get; set; }
+    public PivotLevels PivotLevels { get; set; } = new();
     public DateTime SignalTime { get; set; }
     public string Status { get; set; } = "PENDING"; // PENDING, EXECUTED, REJECTED, EXPIRED
-    public string RejectionReason { get; set; }
+    public string RejectionReason { get; set; } = string.Empty;
 }
 
 public class PivotLevels
@@ -30,9 +30,9 @@ public class PivotLevels
 public class TradeExecution
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
-    public string SignalId { get; set; }
-    public string Symbol { get; set; }
-    public string Direction { get; set; }
+    public string SignalId { get; set; } = string.Empty;
+    public string Symbol { get; set; } = string.Empty;
+    public string Direction { get; set; } = string.Empty;
     public decimal EntryPrice { get; set; }
     public decimal PositionSize { get; set; }
     public decimal StopLoss { get; set; }

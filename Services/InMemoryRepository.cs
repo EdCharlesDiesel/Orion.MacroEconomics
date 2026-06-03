@@ -14,17 +14,13 @@ public sealed class InMemoryRepository<T> : IRepository<T> where T : class
 
     public Task AddRangeAsync(IEnumerable<T> entities)
     {
-        throw new NotImplementedException();
+        _data.AddRange(entities);
+        return Task.CompletedTask;
     }
 
-    Task<IEnumerable<T>> IRepository<T>.GetAllAsync()
-    {
-        throw new NotImplementedException();
-    }
+    public Task<IEnumerable<T>> GetAllAsync()
+        => Task.FromResult<IEnumerable<T>>(_data.ToList());
 
-    public Task<List<T>> GetAllAsync()
-        => Task.FromResult(_data.ToList());
-
-    public Task SaveChangesAsync()
-        => Task.CompletedTask;
+    public Task<IEnumerable<T>> GetAsync(Func<T, bool> predicate)
+        => Task.FromResult<IEnumerable<T>>(_data.Where(predicate).ToList());
 }

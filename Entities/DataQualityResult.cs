@@ -4,7 +4,7 @@
     {
         public bool IsValid { get; set; }
         public string Reason { get; set; } = "";
-        public IEnumerable<string?> Issues { get; }
+        public IEnumerable<string?> Issues { get; init; } = Array.Empty<string?>();
         public int Score { get; set; }
         public bool CanRetry { get; set; }
 

@@ -29,7 +29,7 @@ namespace Orion.MacroEconomics.Services
                         Date = current.Date,
                         Value = (decimal)(current.Value ?? 0),
                         YoY = yoy,
-                        MoM = (decimal)mom,
+                        MoM = (decimal)(mom ?? 0),
                         ZScore = 0, // computed later
                         Surprise = surprise
                     };

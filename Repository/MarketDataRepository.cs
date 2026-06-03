@@ -185,7 +185,7 @@ public sealed class MarketDataRepository(IDocumentStore store, ILogger<MarketDat
             .ToListAsync(ct);
     }
 
-    public async Task UpsertMacroSnapshotsAsync(List<MacroSnapshot> snapshots, bool isLive, CancellationToken ct = default)
+    public Task UpsertMacroSnapshotsAsync(List<MacroSnapshot> snapshots, bool isLive, CancellationToken ct = default)
     {
         throw new NotImplementedException();
         // ArgumentNullException.ThrowIfNull(snapshots);

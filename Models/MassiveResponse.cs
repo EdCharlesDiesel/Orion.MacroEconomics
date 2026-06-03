@@ -23,7 +23,7 @@ public sealed class ForexTicker
     [JsonPropertyName("currency_name")]   public string  CurrencyName { get; set; } = "";
     [JsonPropertyName("active")]          public bool    Active       { get; set; }
     [JsonPropertyName("last_updated_utc")] public string? LastUpdated { get; set; }
-    public string QuoteCurrency { get; set; }
+    public string QuoteCurrency { get; set; } = string.Empty;
 }
 
 public sealed class TickerDetails
@@ -45,7 +45,7 @@ public sealed class ConversionResult
     [JsonPropertyName("converted")]    public decimal Converted     { get; set; }
     [JsonPropertyName("initial_amount")] public decimal InitialAmount { get; set; }
     [JsonPropertyName("last")]         public ConversionQuote? Last { get; set; }
-    public string Timestamp { get; set; }
+    public string Timestamp { get; set; } = string.Empty;
 }
 
 public sealed class ConversionQuote
@@ -132,7 +132,7 @@ public sealed class ForexQuote
     [JsonPropertyName("bid_exchange")]    public int     BidExchange   { get; set; }
     [JsonPropertyName("sip_timestamp")]   public long    SipTimestamp  { get; set; }
     [JsonPropertyName("participant_timestamp")] public long ParticipantTimestamp { get; set; }
-    public string SequenceNumber { get; set; }
+    public string SequenceNumber { get; set; } = string.Empty;
 }
 
 public sealed class LastQuoteResult
@@ -146,10 +146,10 @@ public sealed class LastQuoteResult
 
 public sealed class IndicatorResponse
 {
-        public List<IndicatorValue> Results   { get; set; }
-         public string            Status    { get; set; } = "";
-     public string?           RequestId { get; set; }
-       public string?           NextUrl   { get; set; }
+    public List<IndicatorValue> Results { get; set; } = new();
+    public string Status { get; set; } = "";
+    public string? RequestId { get; set; }
+    public string? NextUrl { get; set; }
 }
 
 public sealed class IndicatorResults

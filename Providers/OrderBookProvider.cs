@@ -5,8 +5,6 @@ namespace Orion.MacroEconomics.Providers;
 
 public class OrderBookProvider: IOrderBookProvider
 {
-    public Task<OrderBook> GetOrderBookAsync(string pair)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<OrderBook?> GetOrderBookAsync(string pair)
+        => throw new NotImplementedException();
 }

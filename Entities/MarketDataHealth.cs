@@ -7,8 +7,8 @@
         public bool IsStale { get; set; }
         public DateTime? LastTimestampUtc { get; set; }
         public List<string> Issues { get; set; } = new();
-        public string Message { get; set; }
+        public string Message { get; set; } = string.Empty;
         public DateTime CheckedAtUtc { get; set; }
-        public string Provider { get; set; }
+        public string Provider { get; set; } = string.Empty;
     }
 }

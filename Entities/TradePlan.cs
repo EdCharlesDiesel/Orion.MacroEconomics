@@ -3,7 +3,7 @@
     public sealed class TradePlan
     {
         public Guid Id { get; set; }
-        public string Status { get; set; }
+        public string Status { get; set; } = string.Empty;
         public string Pair { get; set; } = "";
         public string Direction { get; set; } = "";
         public decimal EntryPrice { get; set; }
@@ -19,8 +19,8 @@
         public decimal ExitPrice { get; set; }
         public decimal TakeProfit1 { get; set; }
         public decimal TakeProfit2 { get; set; }
-        public string Timeframe { get; set; }
-        public string Reasoning { get; set; }
+        public string Timeframe { get; set; } = string.Empty;
+        public string Reasoning { get; set; } = string.Empty;
         public decimal RiskReward { get; set; }
         public decimal ATR { get; set; }
         public decimal EMA20 { get; set; }

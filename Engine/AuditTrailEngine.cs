@@ -37,7 +37,7 @@ public sealed class AuditTrailEngine(
 
         entry.SessionId = record.SessionId;
         entry.Pair = record.Input?.Pair;
-        entry.Direction = record.Decision?.Direction;
+        entry.Direction = record.Decision?.Direction ?? string.Empty;
         entry.Confidence = record.Decision?.Confidence;
 
         await EnqueueAndMaybeFlushAsync(entry);
@@ -58,7 +58,7 @@ public sealed class AuditTrailEngine(
             new PipelineStepAudit
             {
                 StepName = stepName.Trim(),
-                Data = stepData,
+                Data = stepData!,
                 Duration = duration,
                 DataType = typeof(T).Name
             });
@@ -84,7 +84,7 @@ public sealed class AuditTrailEngine(
                 Stage = stage.Trim(),
                 ExceptionType = exception.GetType().Name,
                 Message = exception.Message,
-                StackTrace = exception.StackTrace,
+                StackTrace = exception.StackTrace ?? string.Empty,
                 Context = context ?? new Dictionary<string, object>()
             });
 

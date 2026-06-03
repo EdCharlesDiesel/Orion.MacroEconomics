@@ -377,7 +377,7 @@ namespace Orion.MacroEconomics.Services
             {
                 var cacheKey = $"ohlcv_{pair}_{timeframe}_{count}";
 
-                if (_cache.TryGetValue(cacheKey, out List<OhlcvBar> cachedData))
+                if (_cache.TryGetValue(cacheKey, out List<OhlcvBar>? cachedData) && cachedData is not null)
                 {
                     return cachedData;
                 }
@@ -392,7 +392,7 @@ namespace Orion.MacroEconomics.Services
                     _cache.Set(cacheKey, data, cacheOptions);
                 }
 
-                return data;
+                return data ?? new List<OhlcvBar>();
             }
             finally
             {

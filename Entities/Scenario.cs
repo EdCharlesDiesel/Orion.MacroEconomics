@@ -1,4 +1,4 @@
-﻿namespace Orion.MacroEconomics.Entities
+namespace Orion.MacroEconomics.Entities
 {
     public class Scenario
     {
@@ -25,13 +25,13 @@
     {
         public string ScenarioName { get; set; } = default!;
 
-        public List<CurrencyFactorScore> Factors { get; set; }
-        public List<FxSignal> Signals { get; set; }
-        public List<PortfolioPosition> Portfolio { get; set; }
+        public List<CurrencyFactorScore> Factors { get; set; } = new();
+        public List<FxSignal> Signals { get; set; } = new();
+        public List<PortfolioPosition> Portfolio { get; set; } = new();
 
-        public ScenarioImpact Impact { get; set; }
-        public string Name { get; internal set; }
-        public string Direction { get; internal set; }
+        public ScenarioImpact Impact { get; set; } = new();
+        public string Name { get; internal set; } = string.Empty;
+        public string Direction { get; internal set; } = string.Empty;
     }
 
     public class ScenarioImpact

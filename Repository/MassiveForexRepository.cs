@@ -129,7 +129,7 @@ public sealed class MassiveForexRepository(IDocumentStore store, ILogger<Massive
 
         if (tickers?.Any() == true)
         {
-            query = query.Where(d => d.Ticker.IsOneOf(tickers.ToArray())) as IMartenQueryable<ForexSnapshotDocument>;
+            query = (query.Where(d => d.Ticker.IsOneOf(tickers.ToArray())) as IMartenQueryable<ForexSnapshotDocument>)!;
         }
 
         var docs = await query

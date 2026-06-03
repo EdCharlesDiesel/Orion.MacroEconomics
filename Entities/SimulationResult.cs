@@ -7,7 +7,7 @@
         public decimal PortfolioReturn { get; set; }
         public decimal Risk { get; set; }
 
-        public List<PortfolioPosition> Portfolio { get; set; }
+        public List<PortfolioPosition> Portfolio { get; set; } = new();
     }
 
     public class ProbabilisticResult

@@ -1,32 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Orion.MacroEconomics.ActionFilters;
 
 public class CheckShowStatisticsHeader : ActionFilterAttribute
-{ 
-    public void OnActionExecuting(ActionExecutingContext context)
+{
+    public override void OnActionExecuting(ActionExecutingContext context)
     {
-        // if the ShowStatistics header is missing or set to false, 
-        // a BadRequest must be returned.
-        if (!context.HttpContext.Request.Headers
-                .ContainsKey("ShowStatistics"))
+        if (!context.HttpContext.Request.Headers.TryGetValue("ShowStatistics", out var headerValue))
+        {
+            context.Result = new BadRequestResult();
+            return;
+        }
+
+        if (!bool.TryParse(headerValue.ToString(), out var showStatistics) || !showStatistics)
         {
             context.Result = new BadRequestResult();
         }
-        
-        // get the ShowStatistics header 
-        if (!bool.TryParse(
-                context.HttpContext.Request.Headers["ShowStatistics"].ToString(), 
-                out bool showStatisticsValue))
-        {
-            context.Result = new BadRequestResult();
-        }
-        
-        // check the value
-        if (!showStatisticsValue)
-        {
-            context.Result = new BadRequestResult();
-        }
-    } 
+    }
 }

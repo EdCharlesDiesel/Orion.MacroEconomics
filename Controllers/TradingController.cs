@@ -43,5 +43,5 @@ public sealed record LiveTradingRequest(
     AccountContext Account,
     OrderBook OrderBook)
 {
-    public ForexMarketInput MarketInput { get; set; }
+    public ForexMarketInput MarketInput { get; set; } = new();
 }

@@ -6,8 +6,8 @@ public sealed class MacroEvent
     public string Currency { get; set; } = "";
     public string Impact { get; set; } = "";
     public DateTime EventTimeUtc { get; set; }
-    public string Country { get; set; }
-    public string EventName { get; set; }
+    public string Country { get; set; } = string.Empty;
+    public string EventName { get; set; } = string.Empty;
     public DateTime Date { get; set; }
     public decimal? Actual { get; set; }
     public decimal? Forecast { get; set; }

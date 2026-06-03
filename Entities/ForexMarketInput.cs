@@ -6,8 +6,8 @@
         public List<OhlcvBar> Candles { get; set; } = new();
         public List<MacroEvent> MacroEvents { get; set; } = new();
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-        public string DataSource { get; set; }
-        public object CorrelatedData { get; set; }
+        public string DataSource { get; set; } = string.Empty;
+        public object CorrelatedData { get; set; } = new();
         public DateTime LoadedAt { get; set; }
     }
 

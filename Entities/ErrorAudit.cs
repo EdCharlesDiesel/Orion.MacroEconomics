@@ -2,9 +2,9 @@ namespace Orion.MacroEconomics.Entities;
 
 public class ErrorAudit
 {
-    public string Stage { get; set; }
-    public string ExceptionType { get; set; }
-    public string Message { get; set; }
-    public string StackTrace { get; set; }
-    public Dictionary<string, object> Context { get; set; }
+    public string Stage { get; set; } = string.Empty;
+    public string ExceptionType { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public string StackTrace { get; set; } = string.Empty;
+    public Dictionary<string, object> Context { get; set; } = new();
 }

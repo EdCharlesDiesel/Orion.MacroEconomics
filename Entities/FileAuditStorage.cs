@@ -47,7 +47,7 @@ public class FileAuditStorage : IAuditStorage
             "Consider using database storage for production.");
     }
 
-    public async Task<AuditEntry> GetByIdAsync(Guid id)
+    public async Task<AuditEntry?> GetByIdAsync(Guid id)
     {
         // Scan recent files for specific entry
         var files = Directory.GetFiles(_basePath, "audit_*.jsonl")

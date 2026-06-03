@@ -44,7 +44,7 @@ namespace Orion.MacroEconomics.Services
         {
             var cacheKey = $"ohlcv_{pair}_{timeframe}_{count}";
 
-            if (_cache.TryGetValue(cacheKey, out List<OhlcvBar> cachedData))
+            if (_cache.TryGetValue(cacheKey, out List<OhlcvBar>? cachedData) && cachedData is not null)
             {
                 _logger.LogDebug("Cache hit for {Pair} {Timeframe}", pair, timeframe);
                 return cachedData;
@@ -57,7 +57,7 @@ namespace Orion.MacroEconomics.Services
             try
             {
                 // Double-check cache after acquiring lock
-                if (_cache.TryGetValue(cacheKey, out cachedData))
+                if (_cache.TryGetValue(cacheKey, out cachedData) && cachedData is not null)
                     return cachedData;
 
                 var data = await FetchHistoricalDataAsync(pair, timeframe, count);
@@ -226,7 +226,7 @@ namespace Orion.MacroEconomics.Services
 
         #region Private Data Fetching Methods
 
-        private async Task<List<OhlcvBar>> FetchHistoricalDataAsync(
+        private Task<List<OhlcvBar>> FetchHistoricalDataAsync(
             string pair,
             string timeframe,
             int count)
@@ -259,7 +259,7 @@ namespace Orion.MacroEconomics.Services
             // }
         }
 
-        private async Task<decimal> FetchSpreadAsync(string pair)
+        private Task<decimal> FetchSpreadAsync(string pair)
         {
             throw new NotImplementedException();
             // if (_config.UseMockData)

@@ -5,7 +5,7 @@ namespace Orion.MacroEconomics.Entities;
 
 public class ComponentDetails
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public HealthComponentType Type { get; set; }
     public bool Critical { get; set; }
     public DateTime LastCheck { get; set; }

@@ -6,8 +6,8 @@
         public decimal TakeProfit { get; set; }
         public decimal RiskRewardRatio { get; set; }
         public string Reason { get; set; } = "";
-        public string Pair { get; set; }
-        public string Direction { get; set; }
+        public string Pair { get; set; } = string.Empty;
+        public string Direction { get; set; } = string.Empty;
         public decimal EntryPrice { get; set; }
         public decimal TrailingStopDistance { get; set; }
         public DateTime CreatedAtUtc { get; set; }

@@ -2,7 +2,7 @@ namespace Orion.MacroEconomics.Helpers;
 
 public class PairStatus
 {
-    public string Pair { get; set; }
+    public string Pair { get; set; } = string.Empty;
     public bool IsAvailable { get; set; }
     public bool IsCached { get; set; }
     public TimeSpan? CacheAge { get; set; }

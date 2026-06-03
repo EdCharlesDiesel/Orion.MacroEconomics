@@ -50,11 +50,12 @@ public class ForexDataBackgroundService(
         }
     }
 
-    private async Task CleanupOldDataAsync(IForexEventRepository eventRepository, IForexNewsRepository newsRepository)
+    private Task CleanupOldDataAsync(IForexEventRepository eventRepository, IForexNewsRepository newsRepository)
     {
         // Marten can handle this with document policies, but here's manual cleanup logic
         logger.LogDebug("Cleaning up old data (placeholder for Marten document cleanup)");
         // You can implement Marten's document lifecycle policies instead
+        return Task.CompletedTask;
     }
 
     private async Task LogStatisticsAsync(IForexEventRepository eventRepository, IForexNewsRepository newsRepository)

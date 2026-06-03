@@ -3,7 +3,7 @@ namespace Orion.MacroEconomics.Entities;
 
 public class AuditQueryResult
 {
-    public List<AuditEntry> Entries { get; set; }
+    public List<AuditEntry> Entries { get; set; } = new();
     public int TotalCount { get; set; }
     public int PageSize { get; set; }
     public int PageNumber { get; set; }
