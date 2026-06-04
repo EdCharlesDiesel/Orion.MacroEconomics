@@ -19,6 +19,7 @@ using Orion.MacroEconomics.Repository.Interfaces;
 using Orion.MacroEconomics.Services;
 using Orion.MacroEconomics.Strategies;
 using Quartz;
+using IngestionValidator = Orion.MacroEconomics.Helpers.IngestionValidator;
 
 namespace Orion.MacroEconomics.Extensions;
 
@@ -185,6 +186,9 @@ public static partial class ServiceCollectionExtensions
         services.AddScoped<IRegimeEngine, RegimeEngine>();
         services.AddScoped<IScenarioEngine, ScenarioEngine>();
         services.AddScoped<ISentimentEngine, SentimentEngine>();
+        services.AddScoped<ISignalEngine, SignalEngine>();
+        services.AddScoped<IMacroSimulationEngine, MacroSimulationEngine>();
+        services.AddScoped<ILiveTradingOrchestrator, LiveTradingOrchestrator>();
         services.AddScoped<ITradeLifecycleEngine, TradeLifecycleEngine>();
 
 
@@ -285,6 +289,32 @@ public static partial class ServiceCollectionExtensions
             options.Schema.For<IndicatorDocument>().Identity(x => x.Id);
             options.Schema.For<MarketStatusDocument>().Identity(x => x.Id);
             options.Schema.For<MarketHolidayDocument>().Identity(x => x.Id);
+
+            // Analytics run documents — persist every backtest/Monte-Carlo/walk-forward/
+            // performance/risk/compliance/calendar evaluation for audit and replay.
+            options.Schema.For<BacktestRunDocument>().Identity(x => x.Id);
+            options.Schema.For<WalkForwardRunDocument>().Identity(x => x.Id);
+            options.Schema.For<MonteCarloRunDocument>().Identity(x => x.Id);
+            options.Schema.For<PerformanceReportDocument>().Identity(x => x.Id);
+            options.Schema.For<RealTimeRiskRunDocument>().Identity(x => x.Id);
+            options.Schema.For<CircuitBreakerRunDocument>().Identity(x => x.Id);
+            options.Schema.For<ComplianceRunDocument>().Identity(x => x.Id);
+            options.Schema.For<EconomicCalendarRiskRunDocument>().Identity(x => x.Id);
+
+            // Engine output documents — persist every decision/snapshot for replay & audit.
+            options.Schema.For<RegimeRunDocument>().Identity(x => x.Id);
+            options.Schema.For<ScenarioRunDocument>().Identity(x => x.Id);
+            options.Schema.For<ProbabilisticScenarioRunDocument>().Identity(x => x.Id);
+            options.Schema.For<MacroSimulationRunDocument>().Identity(x => x.Id);
+            options.Schema.For<SignalRunDocument>().Identity(x => x.Id);
+            options.Schema.For<RiskEvaluationRunDocument>().Identity(x => x.Id);
+            options.Schema.For<CorrelationRunDocument>().Identity(x => x.Id);
+            options.Schema.For<LiquidityRunDocument>().Identity(x => x.Id);
+            options.Schema.For<HedgingRunDocument>().Identity(x => x.Id);
+            options.Schema.For<SentimentRunDocument>().Identity(x => x.Id);
+            options.Schema.For<ModelValidationRunDocument>().Identity(x => x.Id);
+            options.Schema.For<PortfolioRiskRunDocument>().Identity(x => x.Id);
+            options.Schema.For<LiveTradingRunDocument>().Identity(x => x.Id);
         });
 
         return services;

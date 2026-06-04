@@ -46,7 +46,7 @@ namespace Orion.MacroEconomics.Engine
 
         private decimal EstimateRisk(List<PortfolioPosition> portfolio)
         {
-            return (decimal)Math.Sqrt((double)portfolio.Sum(p => p.Weight * p.Weight * p.Volatility));
+            return Helpers.DecimalMath.Sqrt(portfolio.Sum(p => p.Weight * p.Weight * p.Volatility));
         }
     }
 }

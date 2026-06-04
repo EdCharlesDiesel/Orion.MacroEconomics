@@ -1,31 +1,43 @@
-﻿using Orion.MacroEconomics.Entities;
+using Orion.MacroEconomics.Entities;
 
 namespace Orion.MacroEconomics.Helpers
 {
     public static class ProbabilisticAggregator
     {
-        public static ProbabilisticResult Aggregate(List<SimulationResult> sims)
+        private const decimal DefaultConfidenceLevel = 0.95m;
+
+        public static ProbabilisticResult Aggregate(
+            List<SimulationResult> sims,
+            decimal confidenceLevel = DefaultConfidenceLevel)
         {
+            if (sims == null || sims.Count == 0)
+                return new ProbabilisticResult();
+
+            if (confidenceLevel <= 0m || confidenceLevel >= 1m)
+                throw new ArgumentOutOfRangeException(nameof(confidenceLevel));
+
             var returns = sims.Select(x => x.PortfolioReturn).ToList();
 
-            var mean = returns.Average();
-            var std = Math.Sqrt(returns.Sum(r => Math.Pow((double)(r - mean), 2)) / returns.Count);
-
+            var mean   = returns.Average();
+            var std    = DecimalMath.Sqrt(returns.Sum(r => (r - mean) * (r - mean)) / returns.Count);
             var sorted = returns.OrderBy(x => x).ToList();
 
-            var var95 = sorted[(int)(0.05 * sorted.Count)];
-            var es = sorted.Take((int)(0.05 * sorted.Count)).Average();
+            var tailFraction = 1m - confidenceLevel;
+            var tailCount    = Math.Max(1, (int)(tailFraction * sorted.Count));
 
-            var probLoss = returns.Count(r => r < 0) / (double)returns.Count;
+            var varAtConfidence = sorted[tailCount - 1];
+            var expectedShortfall = sorted.Take(tailCount).Average();
+
+            var probLoss = (decimal)returns.Count(r => r < 0) / returns.Count;
 
             return new ProbabilisticResult
             {
-                MeanReturn = mean,
-                StdDev = (decimal)std,
-                ValueAtRisk95 = var95,
-                ExpectedShortfall = es,
-                ProbabilityOfLoss = (decimal)probLoss,
-                Distribution = returns
+                MeanReturn        = mean,
+                StdDev            = std,
+                ValueAtRisk95     = varAtConfidence,
+                ExpectedShortfall = expectedShortfall,
+                ProbabilityOfLoss = probLoss,
+                Distribution      = returns
             };
         }
     }

@@ -1,4 +1,4 @@
-﻿using Orion.MacroEconomics.Enum;
+using Orion.MacroEconomics.Enum;
 
 namespace Orion.MacroEconomics.Helpers
 {
@@ -11,12 +11,12 @@ namespace Orion.MacroEconomics.Helpers
 
             return frequency.Trim().ToLowerInvariant() switch
             {
-                "daily" => IndicatorFrequency.Daily,
-                "weekly" => IndicatorFrequency.Weekly,
-                "monthly" => IndicatorFrequency.Monthly,
-                "quarterly" => IndicatorFrequency.Quarterly,
-                "yearly" or "annual" => IndicatorFrequency.Yearly,
-                _ => IndicatorFrequency.Monthly
+                "daily"             => IndicatorFrequency.Daily,
+                "weekly"            => IndicatorFrequency.Weekly,
+                "monthly"           => IndicatorFrequency.Monthly,
+                "quarterly"         => IndicatorFrequency.Quarterly,
+                "yearly" or "annual"=> IndicatorFrequency.Yearly,
+                _                   => IndicatorFrequency.Monthly
             };
         }
 
@@ -24,12 +24,12 @@ namespace Orion.MacroEconomics.Helpers
         {
             return frequency switch
             {
-                IndicatorFrequency.Daily => 252,
-                IndicatorFrequency.Weekly => 52,
-                IndicatorFrequency.Monthly => 12,
+                IndicatorFrequency.Daily     => 252,
+                IndicatorFrequency.Weekly    => 52,
+                IndicatorFrequency.Monthly   => 12,
                 IndicatorFrequency.Quarterly => 4,
-                IndicatorFrequency.Yearly => 1,
-                _ => 12
+                IndicatorFrequency.Yearly    => 1,
+                _                            => 12
             };
         }
 
@@ -37,13 +37,42 @@ namespace Orion.MacroEconomics.Helpers
         {
             return frequency switch
             {
-                IndicatorFrequency.Daily => 252,
-                IndicatorFrequency.Weekly => 52,
-                IndicatorFrequency.Monthly => 36,
+                IndicatorFrequency.Daily     => 252,
+                IndicatorFrequency.Weekly    => 52,
+                IndicatorFrequency.Monthly   => 36,
                 IndicatorFrequency.Quarterly => 20,
-                IndicatorFrequency.Yearly => 10,
-                _ => 36
+                IndicatorFrequency.Yearly    => 10,
+                _                            => 36
             };
         }
+
+        public static int PeriodsPerYear(IndicatorFrequency frequency)
+        {
+            return frequency switch
+            {
+                IndicatorFrequency.Daily     => 252,
+                IndicatorFrequency.Weekly    => 52,
+                IndicatorFrequency.Monthly   => 12,
+                IndicatorFrequency.Quarterly => 4,
+                IndicatorFrequency.Yearly    => 1,
+                _                            => 12
+            };
+        }
+
+        public static TimeSpan ApproximatePeriod(IndicatorFrequency frequency)
+        {
+            return frequency switch
+            {
+                IndicatorFrequency.Daily     => TimeSpan.FromDays(1),
+                IndicatorFrequency.Weekly    => TimeSpan.FromDays(7),
+                IndicatorFrequency.Monthly   => TimeSpan.FromDays(30),
+                IndicatorFrequency.Quarterly => TimeSpan.FromDays(91),
+                IndicatorFrequency.Yearly    => TimeSpan.FromDays(365),
+                _                            => TimeSpan.FromDays(30)
+            };
+        }
+
+        public static string Format(IndicatorFrequency frequency) =>
+            frequency.ToString();
     }
 }

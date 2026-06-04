@@ -9,7 +9,7 @@ public sealed class IngestionRunDocument
     public Guid            Id                     { get; set; }
     public DateTimeOffset  TriggeredAt            { get; set; }
     public DateTimeOffset  CompletedAt            { get; set; }
-    public double          DurationSeconds        { get; set; }
+    public decimal         DurationSeconds        { get; set; }
     public int             TotalRecords           { get; set; }
     public bool            FullySuccessful        { get; set; }
 

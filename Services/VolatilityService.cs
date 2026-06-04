@@ -244,16 +244,16 @@ namespace Orion.MacroEconomics.Services
             var returns = new List<decimal>();
             for (int i = 1; i < prices.Count; i++)
             {
-                var dailyReturn = (decimal)Math.Log((double)(prices[i] / prices[i - 1]));
+                var dailyReturn = Helpers.DecimalMath.Log(prices[i] / prices[i - 1]);
                 returns.Add(dailyReturn);
             }
 
             var mean = returns.Average();
             var variance = returns.Sum(r => (r - mean) * (r - mean)) / (returns.Count - 1);
-            var dailyVolatility = (decimal)Math.Sqrt((double)variance);
+            var dailyVolatility = Helpers.DecimalMath.Sqrt(variance);
 
             // Annualize volatility (assuming daily data)
-            var annualizedVolatility = dailyVolatility * (decimal)Math.Sqrt(252);
+            var annualizedVolatility = dailyVolatility * Helpers.DecimalMath.Sqrt(252m);
             return annualizedVolatility;
         }
 
@@ -360,7 +360,7 @@ namespace Orion.MacroEconomics.Services
 
             var mean = values.Average();
             var variance = values.Sum(v => (v - mean) * (v - mean)) / (values.Count - 1);
-            return (decimal)Math.Sqrt((double)variance);
+            return Helpers.DecimalMath.Sqrt(variance);
         }
 
         #endregion

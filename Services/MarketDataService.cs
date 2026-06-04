@@ -307,18 +307,18 @@ namespace Orion.MacroEconomics.Services
 
             var timeframeMinutes = GetTimeframeMinutes(timeframe);
             var basePrice = GetBasePrice(pair);
-            var volatility = (double)GetDefaultATR(pair);
+            var volatility = GetDefaultATR(pair);
 
-            var currentPrice = (double)basePrice;
+            var currentPrice = basePrice;
             var now = DateTime.UtcNow;
 
             for (int i = count - 1; i >= 0; i--)
             {
-                var change = (random.NextDouble() - 0.5) * 2 * volatility;
-                var open = (decimal)currentPrice;
-                var close = (decimal)(currentPrice + change);
-                var high = (decimal)(Math.Max(currentPrice, currentPrice + change) + random.NextDouble() * volatility * 0.5);
-                var low = (decimal)(Math.Min(currentPrice, currentPrice + change) - random.NextDouble() * volatility * 0.5);
+                var change = ((decimal)random.NextDouble() - 0.5m) * 2m * volatility;
+                var open  = currentPrice;
+                var close = currentPrice + change;
+                var high  = Math.Max(currentPrice, currentPrice + change) + (decimal)random.NextDouble() * volatility * 0.5m;
+                var low   = Math.Min(currentPrice, currentPrice + change) - (decimal)random.NextDouble() * volatility * 0.5m;
                 var volume = (long)(random.NextDouble() * 1000 + 100);
 
                 data.Add(new OhlcvBar

@@ -118,10 +118,9 @@ namespace Orion.MacroEconomics.Engine
             if (values.Count <= 1)
                 return 0m;
 
-            var variance = values.Sum(value =>
-                Math.Pow((double)(value - mean), 2)) / (values.Count - 1);
+            var variance = values.Sum(value => (value - mean) * (value - mean)) / (values.Count - 1);
 
-            return (decimal)Math.Sqrt(variance);
+            return Helpers.DecimalMath.Sqrt(variance);
         }
     }
 }

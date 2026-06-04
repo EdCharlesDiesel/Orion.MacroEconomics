@@ -85,8 +85,8 @@ namespace Orion.MacroEconomics.Engine
             return minutes >= -PreEventWindowMinutes && minutes <= PostEventWindowMinutes;
         }
 
-        private static double GetMinutesUntilEvent(DateTime eventTimeUtc, DateTime nowUtc) =>
-            (eventTimeUtc - nowUtc).TotalMinutes;
+        private static decimal GetMinutesUntilEvent(DateTime eventTimeUtc, DateTime nowUtc) =>
+            (decimal)(eventTimeUtc - nowUtc).TotalMinutes;
 
         private static EconomicCalendarRiskResult CreateRiskResult(MacroEvent nearestEvent) =>
             EconomicCalendarRiskResult.Block(

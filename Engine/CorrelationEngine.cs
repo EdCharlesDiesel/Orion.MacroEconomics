@@ -123,13 +123,13 @@ namespace Orion.MacroEconomics.Engine
         {
             var n = Math.Min(xVals.Count, yVals.Count);
 
-            var x = xVals.TakeLast(n).Select(v => (double)v).ToArray();
-            var y = yVals.TakeLast(n).Select(v => (double)v).ToArray();
+            var x = xVals.TakeLast(n).ToArray();
+            var y = yVals.TakeLast(n).ToArray();
 
             var avgX = x.Average();
             var avgY = y.Average();
 
-            double num = 0, sx = 0, sy = 0;
+            decimal num = 0m, sx = 0m, sy = 0m;
 
             for (int i = 0; i < n; i++)
             {
@@ -137,12 +137,12 @@ namespace Orion.MacroEconomics.Engine
                 var dy = y[i] - avgY;
 
                 num += dx * dy;
-                sx += dx * dx;
-                sy += dy * dy;
+                sx  += dx * dx;
+                sy  += dy * dy;
             }
 
-            var denom = Math.Sqrt(sx * sy);
-            return denom == 0 ? 0 : Math.Round((decimal)(num / denom), 4);
+            var denom = Helpers.DecimalMath.Sqrt(sx * sy);
+            return denom == 0m ? 0m : Math.Round(num / denom, 4);
         }
 
         private static string GetStrength(decimal c)

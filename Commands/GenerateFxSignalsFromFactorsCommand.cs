@@ -43,8 +43,8 @@ namespace Orion.MacroEconomics.Commands
 
         private static decimal CalculateConfidence(decimal strength)
         {
-            var value = 1 - Math.Exp(-(double)strength);
-            return Math.Round((decimal)value, 4);
+            var value = 1m - Helpers.DecimalMath.Exp(-strength);
+            return Math.Round(value, 4);
         }
     }
 }

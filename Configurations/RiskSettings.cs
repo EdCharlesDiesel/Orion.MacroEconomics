@@ -9,6 +9,9 @@ public sealed class RiskSettings
 
     public decimal AtrStopMultiplier { get; set; } = 2.0m;
 
+    /// <summary>ATR multiplier used when sizing the stop-loss. Defaults to <see cref="AtrStopMultiplier"/>.</summary>
+    public decimal AtrSlMultiplier { get; set; } = 2.0m;
+
     public decimal Tp1AtrMultiplier { get; set; } = 3.0m;
 
     public decimal Tp2AtrMultiplier { get; set; } = 5.0m;

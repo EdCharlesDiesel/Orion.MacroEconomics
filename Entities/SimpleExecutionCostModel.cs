@@ -16,7 +16,7 @@ namespace Orion.MacroEconomics.Entities
 
             var liquidityFactor = pair.Contains("ZAR") ? 2.5M : 1.0M;
 
-            return baseSlippage * liquidityFactor * (decimal)Math.Log((double)(1 + (size / 10000)));
+            return baseSlippage * liquidityFactor * Helpers.DecimalMath.Log(1m + (size / 10000m));
         }
     }
 }

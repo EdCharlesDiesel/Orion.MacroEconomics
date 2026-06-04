@@ -13,5 +13,5 @@ public class SystemMetrics
     public long PagedMemory { get; set; }
     public long GcTotalMemory { get; set; }
     public long PipelineDecisionsProcessed { get; set; }
-    public double ErrorRate { get; set; }
+    public decimal ErrorRate { get; set; }
 }

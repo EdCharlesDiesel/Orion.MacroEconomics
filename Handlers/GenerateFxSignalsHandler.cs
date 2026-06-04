@@ -51,7 +51,7 @@ namespace Orion.MacroEconomics.Handlers
         private decimal CalculateConfidence(decimal strength)
         {
             // Sigmoid-like scaling (0 → 1)
-            return (decimal)(1 - Math.Exp((double)-strength));
+            return 1m - Helpers.DecimalMath.Exp(-strength);
         }
     }
 }

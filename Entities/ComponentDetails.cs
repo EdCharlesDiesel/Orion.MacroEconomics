@@ -12,5 +12,5 @@ public class ComponentDetails
     public HealthCheckResult? LastResult { get; set; }
     public long TotalChecks { get; set; }
     public long FailedChecks { get; set; }
-    public double SuccessRate { get; set; }
+    public decimal SuccessRate { get; set; }
 }

@@ -160,8 +160,8 @@ namespace Orion.MacroEconomics.Engine
                 TotalChecks = component.TotalChecks,
                 FailedChecks = component.FailedChecks,
                 SuccessRate = component.TotalChecks > 0
-                    ? (double)(component.TotalChecks - component.FailedChecks) / component.TotalChecks * 100
-                    : 0
+                    ? (decimal)(component.TotalChecks - component.FailedChecks) / component.TotalChecks * 100m
+                    : 0m
             });
         }
 
@@ -362,12 +362,12 @@ namespace Orion.MacroEconomics.Engine
         private HealthCheckResult CheckMemoryUsage()
         {
             var process = Process.GetCurrentProcess();
-            var usedMemoryMb = process.WorkingSet64 / 1024.0 / 1024.0;
+            var usedMemoryMb = process.WorkingSet64 / 1024m / 1024m;
 
             var data = new Dictionary<string, object>
             {
                 ["WorkingSetMB"] = Math.Round(usedMemoryMb, 2),
-                ["ManagedMemoryMB"] = Math.Round(GC.GetTotalMemory(false) / 1024.0 / 1024.0, 2)
+                ["ManagedMemoryMB"] = Math.Round(GC.GetTotalMemory(false) / 1024m / 1024m, 2)
             };
 
             return usedMemoryMb > _options.MaxMemoryThresholdMB

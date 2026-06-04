@@ -1,3 +1,4 @@
+using Marten;
 using Microsoft.AspNetCore.Mvc;
 using Orion.MacroEconomics.DTO;
 using Orion.MacroEconomics.Engine.Interfaces;
@@ -5,7 +6,6 @@ using Orion.MacroEconomics.Engine.Interfaces.Orion.API.TradingEconomics.Engine.I
 using Orion.MacroEconomics.Entities;
 using Orion.MacroEconomics.Enum;
 using Orion.MacroEconomics.Models;
-
 
 namespace Orion.MacroEconomics.Controllers;
 
@@ -34,7 +34,8 @@ public sealed class TradingEnginesController(
     IPortfolioEngine portfolio,
     IOrderManagementEngine orderManagement,
     IRealTimeRiskEngine realTimeRisk,
-    IMarketDataEngine marketData)
+    IMarketDataEngine marketData,
+    IDocumentSession session)
     : ControllerBase
 {
     [HttpPost("data-quality/validate")]
@@ -46,53 +47,113 @@ public sealed class TradingEnginesController(
         => Ok(normalization.Normalize(indicators));
 
     [HttpPost("regime/detect")]
-    public ActionResult<RegimeResult> DetectRegime(NormalizedIndicator indicator)
-        => Ok(regime.Detect(indicator));
+    public async Task<ActionResult<RegimeResult>> DetectRegime(NormalizedIndicator indicator, CancellationToken ct)
+    {
+        var result = regime.Detect(indicator);
+        session.Store(new RegimeRunDocument { Source = "Detect", Result = result });
+        await session.SaveChangesAsync(ct);
+        return Ok(result);
+    }
 
     [HttpGet("regime/next")]
-    public ActionResult<MarketRegime> NextRegime([FromQuery] MarketRegime current)
-        => Ok(regime.Next(current));
+    public async Task<ActionResult<RegimeResult>> NextRegime([FromQuery] MarketRegime current, CancellationToken ct)
+    {
+        var result = regime.Next(current);
+        session.Store(new RegimeRunDocument { Source = "Next", Result = result });
+        await session.SaveChangesAsync(ct);
+        return Ok(result);
+    }
 
     [HttpPost("scenario/run")]
     public async Task<ActionResult<ScenarioResult>> RunScenario(
         Scenario request,
         CancellationToken cancellationToken)
-        => Ok(await scenario.RunAsync(request, cancellationToken));
+    {
+        var result = await scenario.RunAsync(request, cancellationToken);
+        session.Store(new ScenarioRunDocument
+        {
+            Source       = "Run",
+            ScenarioName = result?.ScenarioName ?? result?.Name ?? request?.Name ?? string.Empty,
+            Result       = result ?? new ScenarioResult()
+        });
+        await session.SaveChangesAsync(cancellationToken);
+        return Ok(result);
+    }
 
     [HttpPost("scenario/build")]
-    public ActionResult<ScenarioResult> BuildScenario(ScenarioBuildRequest request)
-        => Ok(scenario.Build(request.Normalized, request.Regime));
+    public async Task<ActionResult<ScenarioResult>> BuildScenario(ScenarioBuildRequest request, CancellationToken ct)
+    {
+        var result = scenario.Build(request.Normalized, request.Regime);
+        session.Store(new ScenarioRunDocument
+        {
+            Source       = "Build",
+            ScenarioName = result?.ScenarioName ?? result?.Name ?? string.Empty,
+            Result       = result ?? new ScenarioResult()
+        });
+        await session.SaveChangesAsync(ct);
+        return Ok(result);
+    }
 
     [HttpPost("probabilistic-scenario/calculate")]
-    public ActionResult<ProbabilisticScenarioResult> CalculateProbabilisticScenario(
-        ProbabilisticScenarioRequest request)
-        => Ok(probabilisticScenario.Calculate(
+    public async Task<ActionResult<ProbabilisticScenarioResult>> CalculateProbabilisticScenario(
+        ProbabilisticScenarioRequest request,
+        CancellationToken ct)
+    {
+        var result = probabilisticScenario.Calculate(
             request.Normalized,
             request.Regime,
-            request.Scenario));
+            request.Scenario);
+        session.Store(new ProbabilisticScenarioRunDocument { Result = result ?? new ProbabilisticScenarioResult() });
+        await session.SaveChangesAsync(ct);
+        return Ok(result);
+    }
 
     [HttpPost("macro-simulation/simulate")]
-    public ActionResult<MacroSimulationResult> SimulateMacro(MacroSimulationRequest request)
-        => Ok(macroSimulation.Simulate(
+    public async Task<ActionResult<MacroSimulationResult>> SimulateMacro(MacroSimulationRequest request, CancellationToken ct)
+    {
+        var result = macroSimulation.Simulate(
             request.Normalized,
             request.Regime,
-            request.Probabilities));
+            request.Probabilities);
+        session.Store(new MacroSimulationRunDocument { Source = "Simulate", Result = result ?? new MacroSimulationResult() });
+        await session.SaveChangesAsync(ct);
+        return Ok(result);
+    }
 
     [HttpPost("signal/generate")]
-    public ActionResult<SignalResult> GenerateSignal(SignalRequest request)
-        => Ok(signal.Generate(
+    public async Task<ActionResult<SignalResult>> GenerateSignal(SignalRequest request, CancellationToken ct)
+    {
+        var result = signal.Generate(
             request.Market,
             request.Regime,
             request.Scenario,
             request.Probabilities,
-            request.MacroSimulation));
+            request.MacroSimulation);
+        session.Store(new SignalRunDocument
+        {
+            Pair   = result?.Pair ?? request.Market?.Pair ?? string.Empty,
+            Result = result ?? new SignalResult()
+        });
+        await session.SaveChangesAsync(ct);
+        return Ok(result);
+    }
 
     [HttpPost("risk/evaluate")]
-    public ActionResult<RiskResult> EvaluateRisk(RiskRequest request)
-        => Ok(risk.Evaluate(
+    public async Task<ActionResult<RiskResult>> EvaluateRisk(RiskRequest request, CancellationToken ct)
+    {
+        var result = risk.Evaluate(
             request.Signal,
             request.Market,
-            request.Regime));
+            request.Regime);
+        session.Store(new RiskEvaluationRunDocument
+        {
+            Pair      = request.Signal?.Pair ?? request.Market?.Pair ?? string.Empty,
+            Direction = request.Signal?.Direction ?? string.Empty,
+            Result    = result ?? new RiskResult()
+        });
+        await session.SaveChangesAsync(ct);
+        return Ok(result);
+    }
 
     [HttpPost("position-sizing/calculate")]
     public ActionResult<PositionSizeResult> CalculatePositionSize(PositionSizingRequest request)
@@ -159,42 +220,96 @@ public sealed class TradingEnginesController(
     public async Task<ActionResult<CorrelationResult>> AnalyzeCorrelation(
         CorrelationRequest request,
         CancellationToken cancellationToken)
-        => Ok(await correlation.AnalyzeAsync(request, cancellationToken));
+    {
+        var result = await correlation.AnalyzeAsync(request, cancellationToken);
+        session.Store(new CorrelationRunDocument
+        {
+            PrimaryPair = result?.PrimaryPair ?? request.PrimaryPair ?? string.Empty,
+            Result      = result ?? new CorrelationResult()
+        });
+        await session.SaveChangesAsync(cancellationToken);
+        return Ok(result);
+    }
 
     [HttpPost("liquidity/analyze")]
     public async Task<ActionResult<LiquidityResult>> AnalyzeLiquidity(
         LiquidityRequest request,
         CancellationToken cancellationToken)
-        => Ok(await liquidity.AnalyzeAsync(request, cancellationToken));
+    {
+        var result = await liquidity.AnalyzeAsync(request, cancellationToken);
+        session.Store(new LiquidityRunDocument
+        {
+            Pair   = result?.Pair ?? request.Pair ?? string.Empty,
+            Result = result ?? new LiquidityResult()
+        });
+        await session.SaveChangesAsync(cancellationToken);
+        return Ok(result);
+    }
 
     [HttpPost("hedging/analyze")]
     public async Task<ActionResult<HedgingResult>> AnalyzeHedging(
         HedgingRequest request,
         CancellationToken cancellationToken)
-        => Ok(await hedging.AnalyzeAsync(request, cancellationToken));
+    {
+        var result = await hedging.AnalyzeAsync(request, cancellationToken);
+        session.Store(new HedgingRunDocument
+        {
+            BaseCurrency = request.PortfolioBaseCurrency ?? string.Empty,
+            Result       = result ?? new HedgingResult()
+        });
+        await session.SaveChangesAsync(cancellationToken);
+        return Ok(result);
+    }
 
     [HttpPost("sentiment/analyze")]
     public async Task<ActionResult<SentimentResult>> AnalyzeSentiment(
         SentimentRequest request,
         CancellationToken cancellationToken)
-        => Ok(await sentiment.AnalyzeAsync(request, cancellationToken));
+    {
+        var result = await sentiment.AnalyzeAsync(request, cancellationToken);
+        session.Store(new SentimentRunDocument
+        {
+            Pair   = result?.Pair ?? request.Pair ?? string.Empty,
+            Result = result ?? new SentimentResult()
+        });
+        await session.SaveChangesAsync(cancellationToken);
+        return Ok(result);
+    }
 
     [HttpPost("performance/analyze")]
     public ActionResult<PerformanceReport> AnalyzePerformance(List<TradePlan> trades)
         => Ok(performance.Analyze(trades));
 
     [HttpPost("model-validation/validate")]
-    public ActionResult<ModelValidationReport> ValidateModel(ModelValidationRequest request)
-        => Ok(modelValidation.Validate(
+    public async Task<ActionResult<ModelValidationReport>> ValidateModel(ModelValidationRequest request, CancellationToken ct)
+    {
+        var result = modelValidation.Validate(
             request.Performance,
-            request.Trades));
+            request.Trades);
+        session.Store(new ModelValidationRunDocument
+        {
+            InputTrades = request.Trades?.Count ?? 0,
+            Result      = result ?? new ModelValidationReport()
+        });
+        await session.SaveChangesAsync(ct);
+        return Ok(result);
+    }
 
     [HttpPost("portfolio/evaluate")]
-    public ActionResult<PortfolioRiskResult> EvaluatePortfolio(PortfolioRiskRequest request)
-        => Ok(portfolio.Evaluate(
+    public async Task<ActionResult<PortfolioRiskResult>> EvaluatePortfolio(PortfolioRiskRequest request, CancellationToken ct)
+    {
+        var result = portfolio.Evaluate(
             request.NewTrade,
             request.OpenTrades,
-            request.Account));
+            request.Account);
+        session.Store(new PortfolioRiskRunDocument
+        {
+            OpenTradeCount = request.OpenTrades?.Count ?? 0,
+            Result         = result ?? new PortfolioRiskResult()
+        });
+        await session.SaveChangesAsync(ct);
+        return Ok(result);
+    }
 
     [HttpPost("order-management/create")]
     public ActionResult<OrderRequest> CreateOrder(OrderCreateRequest request)
@@ -231,13 +346,61 @@ public sealed class TradingEnginesController(
     public async Task<ActionResult<MacroData>> RefreshMacroData(CancellationToken cancellationToken)
        => Ok(await marketData.RefreshMacroDataAsync(cancellationToken));
 
-
-
-
-
     [HttpGet("market-data/health")]
     public async Task<ActionResult<MarketDataHealth>> CheckMarketDataHealth(
         [FromQuery] string pair,
         CancellationToken cancellationToken)
         => Ok(await marketData.CheckHealthAsync(pair, cancellationToken));
+
+    // ──────────────────────────────────────────────────────────────────────
+    // History endpoints — most recent persisted runs for each engine output.
+    // ──────────────────────────────────────────────────────────────────────
+
+    [HttpGet("regime/runs")]
+    public async Task<ActionResult<List<RegimeRunDocument>>> ListRegimeRuns([FromQuery] int limit = 50, CancellationToken ct = default) =>
+        Ok(await session.Query<RegimeRunDocument>().OrderByDescending(x => x.RunAt).Take(Math.Clamp(limit, 1, 500)).ToListAsync(ct));
+
+    [HttpGet("scenario/runs")]
+    public async Task<ActionResult<List<ScenarioRunDocument>>> ListScenarioRuns([FromQuery] int limit = 50, CancellationToken ct = default) =>
+        Ok(await session.Query<ScenarioRunDocument>().OrderByDescending(x => x.RunAt).Take(Math.Clamp(limit, 1, 500)).ToListAsync(ct));
+
+    [HttpGet("probabilistic-scenario/runs")]
+    public async Task<ActionResult<List<ProbabilisticScenarioRunDocument>>> ListProbScenarioRuns([FromQuery] int limit = 50, CancellationToken ct = default) =>
+        Ok(await session.Query<ProbabilisticScenarioRunDocument>().OrderByDescending(x => x.RunAt).Take(Math.Clamp(limit, 1, 500)).ToListAsync(ct));
+
+    [HttpGet("macro-simulation/runs")]
+    public async Task<ActionResult<List<MacroSimulationRunDocument>>> ListMacroSimRuns([FromQuery] int limit = 50, CancellationToken ct = default) =>
+        Ok(await session.Query<MacroSimulationRunDocument>().OrderByDescending(x => x.RunAt).Take(Math.Clamp(limit, 1, 500)).ToListAsync(ct));
+
+    [HttpGet("signal/runs")]
+    public async Task<ActionResult<List<SignalRunDocument>>> ListSignalRuns([FromQuery] int limit = 50, CancellationToken ct = default) =>
+        Ok(await session.Query<SignalRunDocument>().OrderByDescending(x => x.RunAt).Take(Math.Clamp(limit, 1, 500)).ToListAsync(ct));
+
+    [HttpGet("risk/runs")]
+    public async Task<ActionResult<List<RiskEvaluationRunDocument>>> ListRiskRuns([FromQuery] int limit = 50, CancellationToken ct = default) =>
+        Ok(await session.Query<RiskEvaluationRunDocument>().OrderByDescending(x => x.RunAt).Take(Math.Clamp(limit, 1, 500)).ToListAsync(ct));
+
+    [HttpGet("correlation/runs")]
+    public async Task<ActionResult<List<CorrelationRunDocument>>> ListCorrelationRuns([FromQuery] int limit = 50, CancellationToken ct = default) =>
+        Ok(await session.Query<CorrelationRunDocument>().OrderByDescending(x => x.RunAt).Take(Math.Clamp(limit, 1, 500)).ToListAsync(ct));
+
+    [HttpGet("liquidity/runs")]
+    public async Task<ActionResult<List<LiquidityRunDocument>>> ListLiquidityRuns([FromQuery] int limit = 50, CancellationToken ct = default) =>
+        Ok(await session.Query<LiquidityRunDocument>().OrderByDescending(x => x.RunAt).Take(Math.Clamp(limit, 1, 500)).ToListAsync(ct));
+
+    [HttpGet("hedging/runs")]
+    public async Task<ActionResult<List<HedgingRunDocument>>> ListHedgingRuns([FromQuery] int limit = 50, CancellationToken ct = default) =>
+        Ok(await session.Query<HedgingRunDocument>().OrderByDescending(x => x.RunAt).Take(Math.Clamp(limit, 1, 500)).ToListAsync(ct));
+
+    [HttpGet("sentiment/runs")]
+    public async Task<ActionResult<List<SentimentRunDocument>>> ListSentimentRuns([FromQuery] int limit = 50, CancellationToken ct = default) =>
+        Ok(await session.Query<SentimentRunDocument>().OrderByDescending(x => x.RunAt).Take(Math.Clamp(limit, 1, 500)).ToListAsync(ct));
+
+    [HttpGet("model-validation/runs")]
+    public async Task<ActionResult<List<ModelValidationRunDocument>>> ListModelValidationRuns([FromQuery] int limit = 50, CancellationToken ct = default) =>
+        Ok(await session.Query<ModelValidationRunDocument>().OrderByDescending(x => x.RunAt).Take(Math.Clamp(limit, 1, 500)).ToListAsync(ct));
+
+    [HttpGet("portfolio/runs")]
+    public async Task<ActionResult<List<PortfolioRiskRunDocument>>> ListPortfolioRiskRuns([FromQuery] int limit = 50, CancellationToken ct = default) =>
+        Ok(await session.Query<PortfolioRiskRunDocument>().OrderByDescending(x => x.RunAt).Take(Math.Clamp(limit, 1, 500)).ToListAsync(ct));
 }

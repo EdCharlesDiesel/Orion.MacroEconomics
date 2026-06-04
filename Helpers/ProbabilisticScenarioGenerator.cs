@@ -1,19 +1,25 @@
-﻿using Orion.MacroEconomics.Engine;
+using Orion.MacroEconomics.Engine;
 using Orion.MacroEconomics.Entities;
 using Orion.MacroEconomics.Helpers.Interfaces;
 
 namespace Orion.MacroEconomics.Helpers
 {
-    
-
     namespace Orion.API.TradingEconomics.Engine
     {
         public class ProbabilisticScenarioGenerator(ScenarioEngine scenarioEngine) : IProbabilisticScenarioGenerator
         {
             private readonly Random _rand = new();
+
+            private const decimal CpiVolatility       = 0.02m;
+            private const decimal RateVolatility      = 0.5m;
+            private const decimal EuroCpiVolatility   = 0.015m;
+
             public List<ProbabilisticScenario> Generate(int simulations)
             {
-                var scenarios = new List<ProbabilisticScenario>();
+                if (simulations <= 0)
+                    return new List<ProbabilisticScenario>(0);
+
+                var scenarios = new List<ProbabilisticScenario>(simulations);
 
                 for (int i = 0; i < simulations; i++)
                 {
@@ -21,92 +27,112 @@ namespace Orion.MacroEconomics.Helpers
                     {
                         SimulationId = i,
                         Shocks = new List<ScenarioShock>
-                    {
-                        GenerateShock("United States", "CPI", 0.02m),
-                        GenerateShock("United States", "Interest Rate", 0.5m),
-                        GenerateShock("Euro Area", "CPI", 0.015m)
-                    }
+                        {
+                            GenerateShock("United States", "CPI",           CpiVolatility),
+                            GenerateShock("United States", "Interest Rate", RateVolatility),
+                            GenerateShock("Euro Area",     "CPI",           EuroCpiVolatility)
+                        }
                     });
                 }
 
                 return scenarios;
             }
 
-            // -------------------------------
-            // Run scenarios through pipeline
-            // -------------------------------
             public async Task<List<SimulationResult>> RunAsync(List<ProbabilisticScenario> scenarios)
             {
-                var results = new List<SimulationResult>();
+                if (scenarios == null || scenarios.Count == 0)
+                    return new List<SimulationResult>(0);
+
+                var results = new List<SimulationResult>(scenarios.Count);
 
                 foreach (var s in scenarios)
                 {
                     var scenario = new Scenario
                     {
-                        Name = $"Simulation {s.SimulationId}",
+                        Name   = $"Simulation {s.SimulationId}",
                         Shocks = s.Shocks
                     };
 
-                    var scenarioResult = await scenarioEngine.RunAsync(scenario);
-
+                    var scenarioResult  = await scenarioEngine.RunAsync(scenario);
                     var portfolioReturn = EstimateReturn(scenarioResult.Portfolio);
-                    var risk = EstimateRisk(scenarioResult.Portfolio);
+                    var risk            = EstimateRisk(scenarioResult.Portfolio);
 
                     results.Add(new SimulationResult
                     {
-                        SimulationId = s.SimulationId,
+                        SimulationId    = s.SimulationId,
                         PortfolioReturn = portfolioReturn,
-                        Risk = risk,
-                        Portfolio = scenarioResult.Portfolio
+                        Risk            = risk,
+                        Portfolio       = scenarioResult.Portfolio
                     });
                 }
 
                 return results;
             }
 
-            // -------------------------------
-            // Helpers
-            // -------------------------------
             private ScenarioShock GenerateShock(string country, string indicator, decimal volatility)
             {
-                var shock = (decimal)NextGaussian(0, (double)volatility);
+                var shock = NextGaussian(0m, volatility);
 
                 return new ScenarioShock
                 {
-                    Country = country,
-                    Indicator = indicator,
+                    Country    = country,
+                    Indicator  = indicator,
                     ShockValue = shock,
-                    Type = ShockType.Relative
+                    Type       = ShockType.Relative
                 };
             }
 
-            private double NextGaussian(double mean, double stdDev)
+            private decimal NextGaussian(decimal mean, decimal stdDev)
             {
-                var u1 = 1.0 - _rand.NextDouble();
-                var u2 = 1.0 - _rand.NextDouble();
+                var u1 = 1m - (decimal)_rand.NextDouble();
+                var u2 = 1m - (decimal)_rand.NextDouble();
 
                 var randStdNormal =
-                    Math.Sqrt(-2.0 * Math.Log(u1)) *
-                    Math.Sin(2.0 * Math.PI * u2);
+                    DecimalMath.Sqrt(-2m * DecimalMath.Log(u1)) *
+                    DecimalMath.Sin(2m * DecimalMath.Pi * u2);
 
                 return mean + stdDev * randStdNormal;
             }
 
-            private decimal EstimateReturn(List<PortfolioPosition> portfolio)
+            private static decimal EstimateReturn(List<PortfolioPosition> portfolio)
             {
                 if (portfolio == null || portfolio.Count == 0)
-                    return 0;
+                    return 0m;
 
-                return portfolio.Sum(p => p.Weight * p.SignalStrength);
+                decimal total = 0m;
+                foreach (var p in portfolio)
+                {
+                    var directionSign = string.Equals(p.Direction, "SHORT", StringComparison.OrdinalIgnoreCase)
+                        ? -1m
+                        :  1m;
+                    var confidence = p.Confidence == 0m ? 1m : p.Confidence;
+                    total += p.Weight * p.SignalStrength * directionSign * confidence;
+                }
+                return total;
             }
 
-            private decimal EstimateRisk(List<PortfolioPosition> portfolio)
+            private static decimal EstimateRisk(List<PortfolioPosition> portfolio)
             {
                 if (portfolio == null || portfolio.Count == 0)
-                    return 0;
+                    return 0m;
 
-                var variance = portfolio.Sum(p => p.Weight * p.Weight * p.Volatility);
-                return (decimal)Math.Sqrt((double)variance);
+                var totalSize = portfolio.Sum(p => Math.Abs(p.PositionSize));
+                decimal variance;
+
+                if (totalSize > 0m)
+                {
+                    variance = portfolio.Sum(p =>
+                    {
+                        var sizeWeight = Math.Abs(p.PositionSize) / totalSize;
+                        return sizeWeight * sizeWeight * p.Volatility;
+                    });
+                }
+                else
+                {
+                    variance = portfolio.Sum(p => p.Weight * p.Weight * p.Volatility);
+                }
+
+                return DecimalMath.Sqrt(variance);
             }
         }
     }

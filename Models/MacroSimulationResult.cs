@@ -8,6 +8,6 @@ public sealed class MacroSimulationResult
     public decimal Confidence { get; set; }
     public List<MacroState> States { get; set; } = new();
     public MarketRegime FinalRegime { get; set; }
-    public double SuccessRate { get; set; }
+    public decimal SuccessRate { get; set; }
     public DateTime TimestampUtc { get; set; }
 }

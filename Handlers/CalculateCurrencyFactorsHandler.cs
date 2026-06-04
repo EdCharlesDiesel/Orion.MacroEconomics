@@ -102,9 +102,9 @@ namespace Orion.MacroEconomics.Handlers
             if (!list.Any()) return 0;
 
             var mean = list.Average();
-            var std = Math.Sqrt(list.Sum(v => Math.Pow((double)(v - mean), 2)) / list.Count);
+            var std  = Helpers.DecimalMath.Sqrt(list.Sum(v => (v - mean) * (v - mean)) / list.Count);
 
-            return std == 0 ? 0 : (list.Last() - mean) / (decimal)std;
+            return std == 0m ? 0m : (list.Last() - mean) / std;
         }
 
         private string MapCountryToCurrency(string country) => country switch

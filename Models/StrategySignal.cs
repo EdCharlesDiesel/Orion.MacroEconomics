@@ -25,6 +25,13 @@ public class PivotLevels
     public decimal S1 { get; set; }
     public decimal S2 { get; set; }
     public decimal S3 { get; set; }
+
+    // Mid-point levels (between adjacent pivots), used by TechnicalAnalyzer.CalculatePivots.
+    public decimal M0 { get; set; }
+    public decimal M1 { get; set; }
+    public decimal M2 { get; set; }
+    public decimal M3 { get; set; }
+    public decimal M4 { get; set; }
 }
 
 public class TradeExecution
