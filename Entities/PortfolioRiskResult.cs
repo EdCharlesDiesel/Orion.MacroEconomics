@@ -4,7 +4,12 @@
     {
         public bool IsAllowed { get; set; }
         public string Reason { get; set; } = "";
-        public bool Allowed { get; set; }
+
+        /// <summary>
+        /// Convenience alias for <see cref="IsAllowed"/> so both naming conventions
+        /// stay in sync. (Previously this was a separate, never-assigned field.)
+        /// </summary>
+        public bool Allowed => IsAllowed;
 
         public static PortfolioRiskResult Allow(string reason)
         {

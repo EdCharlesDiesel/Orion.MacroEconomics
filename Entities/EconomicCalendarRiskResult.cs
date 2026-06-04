@@ -1,32 +1,27 @@
-﻿namespace Orion.MacroEconomics.Entities
+namespace Orion.MacroEconomics.Entities
 {
     public sealed class EconomicCalendarRiskResult
     {
         public bool IsBlocked { get; set; }
-        public string Reason { get; set; } = "";
         public bool IsClear { get; set; }
+        public string Reason { get; set; } = "";
 
-        public static EconomicCalendarRiskResult Clear(string reason)
-        {
-            return new EconomicCalendarRiskResult
+        public string Message => Reason;
+
+        public static EconomicCalendarRiskResult Clear(string reason) =>
+            new()
             {
                 IsBlocked = false,
+                IsClear = true,
                 Reason = reason
             };
-        }
 
-        public static EconomicCalendarRiskResult Block(string reason)
-        {
-            return new EconomicCalendarRiskResult
+        public static EconomicCalendarRiskResult Block(string reason) =>
+            new()
             {
                 IsBlocked = true,
+                IsClear = false,
                 Reason = reason
             };
-        }
-
-        public bool Message(char obj)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

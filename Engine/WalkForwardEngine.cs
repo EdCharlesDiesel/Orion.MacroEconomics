@@ -6,9 +6,9 @@ namespace Orion.MacroEconomics.Engine
     /// <summary>
     /// Runs rolling walk-forward backtests using fixed train and test periods.
     /// </summary>
-    public sealed class WalkForwardEngine(BacktestEngine engine) : IWalkForwardEngine
+    public sealed class WalkForwardEngine(IBacktestEngine engine) : IWalkForwardEngine
     {
-        private readonly BacktestEngine _engine = engine ?? throw new ArgumentNullException(nameof(engine));
+        private readonly IBacktestEngine _engine = engine ?? throw new ArgumentNullException(nameof(engine));
 
 
         public async Task<List<WalkForwardResult>> RunAsync(DateTime start, DateTime end, CancellationToken cancellationToken = default)

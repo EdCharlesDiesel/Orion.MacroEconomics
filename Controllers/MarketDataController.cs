@@ -6,9 +6,7 @@ namespace Orion.MacroEconomics.Controllers;
 [ApiController]
 [Route("api/market-data")]
 [Produces("application/json")]
-public sealed class MarketDataController(
-    IMarketDataEngine engine,
-    ILogger<MarketDataController> logger) : ControllerBase
+public sealed class MarketDataController(IMarketDataEngine engine) : ControllerBase
 {
     // ── Macro ──────────────────────────────────────────────────────────────────
 

@@ -7,9 +7,7 @@ namespace Orion.MacroEconomics.Controllers;
 [ApiController]
 [Route("api/configuration")]
 [Produces("application/json")]
-public sealed class ConfigurationController(
-    IConfigurationEngine configurationEngine,
-    ILogger<ConfigurationController> logger) : ControllerBase
+public sealed class ConfigurationController(IConfigurationEngine configurationEngine) : ControllerBase
 {
     /// <summary>
     /// Returns the full trading system configuration.

@@ -25,7 +25,7 @@
         {
             return new PerformanceReport
             {
-                Verdict = "NO_DATA",
+                Verdict = reason,
                 Reason = reason
             };
         }

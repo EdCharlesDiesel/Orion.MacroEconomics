@@ -181,6 +181,7 @@ public static partial class ServiceCollectionExtensions
         services.AddScoped<IPositionSizingEngine, PositionSizingEngine>();
         services.AddScoped<IProbabilisticScenarioEngine, ProbabilisticScenarioEngine>();
         services.AddScoped<IRealBacktestEngine, RealBacktestEngine>();
+        services.AddScoped<IWalkForwardEngine, WalkForwardEngine>();
         services.AddScoped<IRealTimeRiskEngine, RealTimeRiskEngine>();
         services.AddScoped<IRiskEngine, RiskEngine>();
         services.AddScoped<IRegimeEngine, RegimeEngine>();
@@ -207,7 +208,9 @@ public static partial class ServiceCollectionExtensions
             q.AddTrigger(opts => opts
                 .ForJob("DailyTradingStrategyJob")
                 .WithIdentity("DailyTradingStrategyTrigger")
-                .WithCronSchedule("30 0 * * *")); // Runs at 00:30 UTC daily
+                // Quartz cron is 6 fields: seconds minutes hours day-of-month month day-of-week.
+                // Fires every day at 00:30:00 UTC.
+                .WithCronSchedule("0 30 0 ? * *"));
         });
         services.AddQuartzHostedService();
 

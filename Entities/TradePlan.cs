@@ -45,6 +45,7 @@
             Status = "CLOSED";
             CloseReason = reason;
             ClosePrice = closePrice;
+            ExitPrice = closePrice;
             ClosedAt = closedAt;
 
             ProfitLoss = Direction == "LONG"

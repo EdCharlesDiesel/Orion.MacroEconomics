@@ -11,12 +11,12 @@ namespace Orion.MacroEconomics.Engine;
 /// </summary>
 public sealed class BacktestEngine(
     IMediator mediator,
-    AdvancedExecutionEngine execution,
+    IAdvancedExecutionEngine execution,
     Random? random = null)
     : IBacktestEngine
 {
     private readonly IMediator _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-    private readonly AdvancedExecutionEngine _execution = execution ?? throw new ArgumentNullException(nameof(execution));
+    private readonly IAdvancedExecutionEngine _execution = execution ?? throw new ArgumentNullException(nameof(execution));
     private readonly Random _random = random ?? new Random();
 
     /// <summary>

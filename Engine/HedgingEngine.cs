@@ -15,7 +15,7 @@ namespace Orion.MacroEconomics.Engine
         {
             ArgumentNullException.ThrowIfNull(request);
 
-            if (request.OpenPositions.Count == 0)
+            if (request.OpenPositions is null || request.OpenPositions.Count == 0)
             {
                 return Task.FromResult(new HedgingResult
                 {
@@ -180,7 +180,7 @@ namespace Orion.MacroEconomics.Engine
 
             return hedgePercent switch
             {
-                >= 40m => "HEDGE_REQUIRED_HIGH",
+                >= 50m => "HEDGE_REQUIRED_HIGH",
                 >= 20m => "HEDGE_REQUIRED_MODERATE",
                 _ => "HEDGE_REQUIRED_LOW"
             };

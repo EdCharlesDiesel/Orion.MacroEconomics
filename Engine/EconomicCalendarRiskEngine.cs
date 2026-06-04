@@ -47,7 +47,7 @@ namespace Orion.MacroEconomics.Engine
         }
 
         private static bool HasNoMacroEvents(ForexMarketInput input) =>
-            input.MacroEvents.Count == 0;
+            input.MacroEvents is null || input.MacroEvents.Count == 0;
 
         private static HashSet<string> GetCurrenciesFromPair(string pair)
         {

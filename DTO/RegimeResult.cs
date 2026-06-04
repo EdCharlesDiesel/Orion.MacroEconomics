@@ -31,11 +31,7 @@ public sealed class RegimeResult
     // ── Convenience accessors (derived — never stored separately) ──────────────
 
     /// <summary>Regime name as a string — use instead of a separate Name field.</summary>
-    public string Name
-    {
-        get => Regime.ToString();
-        init => throw new NotImplementedException();
-    }
+    public string Name => Regime.ToString();
 
     /// <summary>Whether the result carries a strong signal (confidence ≥ 60).</summary>
     public bool IsHighConviction => Confidence >= 60m;
